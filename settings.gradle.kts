@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "WiseWalk"
+rootProject.name = "Radioactivity"
 include(":app")

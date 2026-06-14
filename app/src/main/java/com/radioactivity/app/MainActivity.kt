@@ -1,4 +1,4 @@
-package com.wisewalk.app
+package com.radioactivity.app
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -14,10 +14,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.wisewalk.app.databinding.ActivityMainBinding
+import com.radioactivity.app.databinding.ActivityMainBinding
 
 /**
- * Embolcalla el joc "Font Radioactiva" (wisewalk.html) en un WebView a pantalla
+ * Embolcalla el joc "Font Radioactiva" (radioactivity.html) en un WebView a pantalla
  * completa. L'única responsabilitat nativa és carregar el joc i gestionar el
  * permís de geolocalització que demana la pàgina (HTML5 Geolocation API).
  */
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
             setGeolocationDatabasePath(filesDir.path)
         }
 
-        wv.loadUrl("file:///android_asset/wisewalk.html")
+        wv.loadUrl("file:///android_asset/radioactivity.html")
 
         if (!hasLocationPermission()) requestLocationPermission()
 
