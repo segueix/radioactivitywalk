@@ -43,9 +43,9 @@
   /* ---------- JOC (negre) ---------- */
   #play{background:#000;justify-content:center;}
   .hint{color:#2a2a2a;font-size:.9rem;letter-spacing:3px;text-transform:uppercase;}
-  .pulse-ring{width:28px;height:28px;border-radius:50%;background:#1c1c1c;margin-top:26px;--tick:var(--groc);}
+  .pulse-ring{width:28px;height:28px;border-radius:50%;background:#1c1c1c;margin-top:26px;--tick:var(--groc);--tick-scale:2.4;--tick-glow:22px;}
   .pulse-ring.tick{animation:tick .12s ease-out;}
-  @keyframes tick{0%{transform:scale(1);background:#1c1c1c;}40%{transform:scale(2.4);background:var(--tick);box-shadow:0 0 22px var(--tick);}100%{transform:scale(1);background:#1c1c1c;}}
+  @keyframes tick{0%{transform:scale(1);background:#1c1c1c;}40%{transform:scale(var(--tick-scale));background:var(--tick);box-shadow:0 0 var(--tick-glow) var(--tick);}100%{transform:scale(1);background:#1c1c1c;}}
   .exit-btn{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;width:auto;background:none;color:#3a3a3a;font-size:.8rem;font-weight:600;letter-spacing:1px;padding:8px 10px;}
 
   /* ---------- ALARMA ---------- */
@@ -127,7 +127,7 @@ function ac(){
   return ctx;
 }
 
-function clickSound(){
+function clickSound(intensity=1){
   const a=ac(), t=a.currentTime, dur=0.03;
   const buf=a.createBuffer(1,Math.ceil(a.sampleRate*dur),a.sampleRate);
   const d=buf.getChannelData(0);
@@ -136,7 +136,7 @@ function clickSound(){
   const bp=a.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=8;
   const g=a.createGain();
   g.gain.setValueAtTime(0.0001,t);
-  g.gain.exponentialRampToValueAtTime(0.9,t+0.0008);
+  g.gain.exponentialRampToValueAtTime(0.9*intensity,t+0.0008);
   g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   src.connect(bp); bp.connect(g); g.connect(a.destination);
   src.start(t); src.stop(t+dur);
@@ -271,23 +271,42 @@ function onMove(pos){
 function onGeoErr(err){}
 
 const pulseRing=$('pulseRing');
-function scheduleClick(rate){
+const DOUBLE_GAP=0.065;   // separació (s) del clic dèbil "enganxat" al fort
+const DOUBLE_PROB=0.3;    // probabilitat que un clic sigui doble (fort + dèbil)
+let weakTimer=null;
+
+/* Emet un "tic": so + pulsació del punt, sempre disparats al mateix instant
+   perquè quedin perfectament sincronitzats. intensity 1 = fort, <1 = dèbil. */
+function emitTick(intensity){
   if(!running) return;
-  clickSound();
-  // Senyal visual i hàptica sincronitzades amb el clic
+  clickSound(intensity);
   const prox=1-lastDist/initialDist;   // 1 a prop, 0 a la distància inicial, <0 si s'allunya
   pulseRing.style.setProperty('--tick', proxColor(prox));
+  pulseRing.style.setProperty('--tick-scale', (1+1.4*intensity).toFixed(2)); // fort més gran que dèbil
+  pulseRing.style.setProperty('--tick-glow', Math.round(22*intensity)+'px');
   pulseRing.classList.remove('tick'); void pulseRing.offsetWidth; pulseRing.classList.add('tick');
-  if(vibOn && navigator.vibrate){
-    if(prox>0.45) navigator.vibrate(Math.round(8+prox*22));
+  if(vibOn && navigator.vibrate && prox>0.45){
+    navigator.vibrate(Math.round((8+prox*22)*intensity));
+  }
+}
+
+function scheduleClick(rate){
+  if(!running) return;
+  emitTick(1);                                  // clic fort + pulsació forta
+  // De tant en tant, un clic dèbil "enganxat" just després: el punt el segueix
+  // amb una pulsació més dèbil, amb el mateix interval que el so.
+  let extra=0;
+  if(Math.random()<DOUBLE_PROB){
+    weakTimer=setTimeout(()=>emitTick(0.4), DOUBLE_GAP*1000);
+    extra=DOUBLE_GAP*1000+40;                    // evita que el següent clic trepitgi el dèbil
   }
   const delay=-Math.log(1-Math.random())/rate*1000; // intervals tipus Poisson
-  geigerTimer=setTimeout(()=>scheduleClick(currentRate(lastDist)), delay);
+  geigerTimer=setTimeout(()=>scheduleClick(currentRate(lastDist)), Math.max(delay,extra));
 }
 
 function reachTarget(){
   running=false;
-  clearTimeout(geigerTimer);
+  clearTimeout(geigerTimer); clearTimeout(weakTimer);
   if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
   show('alarm'); $('alarm').classList.add('flash');
   startSiren();
@@ -295,7 +314,7 @@ function reachTarget(){
 
 function cleanup(){
   running=false;
-  clearTimeout(geigerTimer);
+  clearTimeout(geigerTimer); clearTimeout(weakTimer);
   stopSiren();
   if(watchId!=null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
   releaseWake();

@@ -5,12 +5,12 @@
 ---
 
 ## Fase 1: Neteja de la Clau API d'OpenRouteService (HTML/JS)
-**Fitxer objectiu:** `app/src/main/assets/wisewalk.html`
+**Fitxer objectiu:** `app/src/main/assets/radioactivity.html`
 
 **Prompt per a l'agent:**
 > Llegeix l'HTML. Necessitem eliminar qualsevol rastre de la configuració de la clau API d'ORS.
 > 1. Elimina el camp `<input type="password" id="api-key-config">` i la seva etiqueta/text d'ajuda associat a la pantalla de configuració (`#screen-config`).
-> 2. A l'script JS, elimina la lectura i escriptura de `wisewalk-ors-apikey` a `localStorage`.
+> 2. A l'script JS, elimina la lectura i escriptura de `radioactivity-ors-apikey` a `localStorage`.
 > 3. Elimina la funció `sanitizeApiKey(key)`.
 > 4. A la funció `generateRandomRoute()`, elimina la validació que bloquejava la generació si no hi havia API key.
 >
@@ -19,7 +19,7 @@
 ---
 
 ## Fase 2: Substitució del motor de rutes (De ORS a OSRM)
-**Fitxer objectiu:** `app/src/main/assets/wisewalk.html`
+**Fitxer objectiu:** `app/src/main/assets/radioactivity.html`
 
 **Prompt per a l'agent:**
 > Reescriu la funció `fetchRouteWithOrs(start, end)`.
@@ -34,7 +34,7 @@
 ---
 
 ## Fase 3: Adaptació del parser de rutes i mètrics (HTML/JS)
-**Fitxer objectiu:** `app/src/main/assets/wisewalk.html`
+**Fitxer objectiu:** `app/src/main/assets/radioactivity.html`
 
 **Prompt per a l'agent:**
 > OSRM retorna les dades amb una estructura diferent a ORS i **no inclou elevació**. Cal ajustar la funció `generateRouteFromLocation(start)`.
@@ -50,7 +50,7 @@
 ---
 
 ## Fase 4: Migració Nativa de Google Maps a Osmdroid (Android)
-**Fitxers objectiu:** `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `app/src/main/res/layout/activity_main.xml`, `app/src/main/java/com/wisewalk/app/MainActivity.kt`
+**Fitxers objectiu:** `app/build.gradle.kts`, `app/src/main/AndroidManifest.xml`, `app/src/main/res/layout/activity_main.xml`, `app/src/main/java/com/radioactivity/app/MainActivity.kt`
 
 **Prompt per a l'agent:**
 > Fes la substitució completa de Google Maps per Osmdroid al codi natiu.
@@ -70,10 +70,10 @@
 ---
 
 ## Fase 5: Funció de mostreig i consulta d'elevació
-**Fitxer objectiu:** `app/src/main/assets/wisewalk.html`
+**Fitxer objectiu:** `app/src/main/assets/radioactivity.html`
 
 **Prompt per a l'agent:**
-> A l'script JS de `wisewalk.html`, crea una nova funció asíncrona anomenada `fetchElevationGain(coordinates)`.
+> A l'script JS de `radioactivity.html`, crea una nova funció asíncrona anomenada `fetchElevationGain(coordinates)`.
 > Aquesta funció ha de fer el següent:
 > 1. Rebre l'array de coordenades GeoJSON (format `[lng, lat]`) que retorna OSRM.
 > 2. Com que Open-Meteo accepta un màxim de 100 punts per petició GET, aplica un mostreig a l'array per quedar-te amb un màxim de 90 punts equidistants de la ruta (calculant un `step = Math.max(1, Math.floor(coordinates.length / 90))`).
@@ -87,10 +87,10 @@
 ---
 
 ## Fase 6: Integració de l'elevació al flux principal
-**Fitxer objectiu:** `app/src/main/assets/wisewalk.html`
+**Fitxer objectiu:** `app/src/main/assets/radioactivity.html`
 
 **Prompt per a l'agent:**
-> Actualitza la funció `generateRandomRoute()` a `wisewalk.html` per integrar el nou càlcul d'elevació i restaurar la UI.
+> Actualitza la funció `generateRandomRoute()` a `radioactivity.html` per integrar el nou càlcul d'elevació i restaurar la UI.
 > 1. Just després d'obtenir la ruta correcta d'OSRM (`routeResult.data`), extreu l'array complet de coordenades de la geometria de la ruta (`routeResult.data.routes[0].geometry.coordinates`).
 > 2. Crida la nova funció `fetchElevationGain` passant-li aquestes coordenades i guarda el resultat a la variable `totalPositiveGainM`.
 > 3. Elimina qualsevol codi temporal de la "Fase 3" que forçava l'elevació a 0.

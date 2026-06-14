@@ -8,7 +8,7 @@ la velocitat dels "clics" d'un comptador Geiger simulat — com més ràpid sone
 més a prop ets. Quan arribes a la font salta l'alarma nuclear i l'has de
 desactivar.
 
-El joc viu sencer dins `app/src/main/assets/wisewalk.html`. La part nativa
+El joc viu sencer dins `app/src/main/assets/radioactivity.html`. La part nativa
 (`MainActivity.kt`) només embolcalla aquesta pàgina en un WebView a pantalla
 completa i gestiona el permís de localització.
 

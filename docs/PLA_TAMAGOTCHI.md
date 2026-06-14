@@ -1,4 +1,4 @@
-# Pla d'integració del Tamagotchi de WiseWalk
+# Pla d'integració del Tamagotchi de Radioactivity
 
 Objectiu: convertir la mascota en el motor de motivació de l'app. El primer dia, un **ou misteriós apareix al pin de destinació** de la caminada; en arribar-hi es pot **reclamar** i desbloqueja una pantalla de **Tamagotchi clàssic**. A partir d'aleshores, **elements de cura (menjar, joguines...) apareixen repartits per les rutes**: es recullen caminant i es donen a la mascota.
 
@@ -8,7 +8,7 @@ Bucle de motivació: la mascota té gana i avorriment que baixen cada dia → pe
 
 ## Principis d'arquitectura
 
-- **Tota la lògica de joc viu a la capa web** (`wisewalk.html` + `localStorage`), com la resta de l'app. Sense backend: tot és local.
+- **Tota la lògica de joc viu a la capa web** (`radioactivity.html` + `localStorage`), com la resta de l'app. Sense backend: tot és local.
 - **El natiu només pinta marcadors al mapa**: un estil d'ou per al pin de destinació i una capa nova de col·leccionables. Són 2 mètodes nous de pont i 1 overlay nou de Kotlin.
 - **Estètica coherent**: carcassa de Tamagotchi clàssic (ovalada, 3 botons) feta amb CSS, pantalla tipus LCD amb la mascota en pixel art monocrom del color accent. Segueix el tema clar/fosc i els 4 colors accent existents.
 - **Detecció de proximitat reutilitzada**: el mateix `setRouteUserLocation` que ja calcula snapping i arribada comprova la distància als col·leccionables (haversine ≤ 30 m).
@@ -19,7 +19,7 @@ Bucle de motivació: la mascota té gana i avorriment que baixen cada dia → pe
 
 Claus noves de `localStorage`:
 
-- `wisewalk-pet`:
+- `radioactivity-pet`:
   ```json
   {
     "name": "Wisi",
@@ -31,7 +31,7 @@ Claus noves de `localStorage`:
     "lastTickAt": 0
   }
   ```
-- `wisewalk-pet-inventory`: `[{ "type": "apple", "qty": 2 }, ...]`
+- `radioactivity-pet-inventory`: `[{ "type": "apple", "qty": 2 }, ...]`
 
 Catàleg d'elements (constant JS):
 
@@ -94,15 +94,15 @@ Evolució per XP: ou (en reclamar) → cria (50) → jove (150) → adult (400).
 
 | Capa | Canvis |
 |---|---|
-| `wisewalk.html` (JS) | Mòdul d'estat de mascota + inventari, modal d'eclosió, pantalla `screen-pet`, spawn i recollida de col·leccionables, integració amb el flux de reclamar |
-| `wisewalk.html` (CSS) | Carcassa Tamagotchi, LCD pixel art, barres, inventari, banner de recollida |
+| `radioactivity.html` (JS) | Mòdul d'estat de mascota + inventari, modal d'eclosió, pantalla `screen-pet`, spawn i recollida de col·leccionables, integració amb el flux de reclamar |
+| `radioactivity.html` (CSS) | Carcassa Tamagotchi, LCD pixel art, barres, inventari, banner de recollida |
 | `MainActivity.kt` | 3 mètodes de pont nous: `setDestinationMarkerStyle`, `drawCollectibles`, `removeCollectible` |
 | `PulsingMarkerOverlay.kt` | Mode «ou» |
 | `CollectibleOverlay.kt` (nou) | Icones flotants d'elements sobre la ruta |
 
 ## Riscos i decisions obertes
 
-- **Mida del fitxer únic**: `wisewalk.html` ja és gran; el mòdul de joc s'hi afegirà com a secció delimitada i, si creix més, es valorarà separar-lo en un asset JS propi.
+- **Mida del fitxer únic**: `radioactivity.html` ja és gran; el mòdul de joc s'hi afegirà com a secció delimitada i, si creix més, es valorarà separar-lo en un asset JS propi.
 - **Art**: començar amb sprites simples (16×16, 2-3 fotogrames); es poden refinar després sense tocar la lògica.
 - **Una sola mascota** per usuari a la v1 (sense col·lecció d'espècies); el model de dades ho deixa obert per al futur.
 

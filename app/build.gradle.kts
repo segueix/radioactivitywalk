@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.wisewalk.app"
+    namespace = "com.radioactivity.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.wisewalk.app"
+        applicationId = "com.radioactivity.app"
         minSdk = 26
         targetSdk = 34
         versionCode = 11
@@ -17,7 +17,7 @@ android {
 
     signingConfigs {
         create("customDebug") {
-            storeFile = file("wisewalk-debug.keystore")
+            storeFile = file("radioactivity-debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
