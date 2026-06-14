@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.WiseWalk" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:statusBarColor">#f8f6f1</item>
-        <item name="android:navigationBarColor">#f8f6f1</item>
-        <item name="android:windowLightStatusBar">true</item>
+    <style name="Theme.WiseWalk" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">#000000</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
 </resources>
