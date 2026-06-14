@@ -43,13 +43,10 @@
   /* ---------- JOC (negre) ---------- */
   #play{background:#000;justify-content:center;}
   .hint{color:#2a2a2a;font-size:.9rem;letter-spacing:3px;text-transform:uppercase;}
-  .pulse-ring{width:14px;height:14px;border-radius:50%;background:#1c1c1c;margin-top:26px;}
+  .pulse-ring{width:28px;height:28px;border-radius:50%;background:#1c1c1c;margin-top:26px;--tick:var(--groc);}
   .pulse-ring.tick{animation:tick .12s ease-out;}
-  @keyframes tick{0%{transform:scale(1);background:#1c1c1c;}40%{transform:scale(2.4);background:var(--groc);box-shadow:0 0 22px rgba(247,208,0,.6);}100%{transform:scale(1);background:#1c1c1c;}}
-  .dbg{position:absolute;bottom:max(20px,env(safe-area-inset-bottom));left:0;right:0;font-family:ui-monospace,monospace;font-size:.8rem;color:#444;}
+  @keyframes tick{0%{transform:scale(1);background:#1c1c1c;}40%{transform:scale(2.4);background:var(--tick);box-shadow:0 0 22px var(--tick);}100%{transform:scale(1);background:#1c1c1c;}}
   .exit-btn{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;width:auto;background:none;color:#3a3a3a;font-size:.8rem;font-weight:600;letter-spacing:1px;padding:8px 10px;}
-  #simBox{display:none;width:100%;max-width:320px;margin-top:30px;}
-  #simSlider{width:100%;accent-color:var(--groc);}
 
   /* ---------- ALARMA ---------- */
   #alarm{background:#1a0000;}
@@ -93,8 +90,6 @@
       <span class="control"><input type="range" id="goal" min="5" max="30" step="1" value="10"><span class="v" id="goalV">10 m</span></span>
     </label>
     <label class="check"><input type="checkbox" id="vib" checked> Vibració de proximitat</label>
-    <label class="check"><input type="checkbox" id="test"> Mode de prova (mostra la distància)</label>
-    <label class="check"><input type="checkbox" id="sim"> Mode simulació (sense GPS)</label>
   </div>
 
   <button id="startBtn">Comença la cerca</button>
@@ -106,14 +101,6 @@
   <button class="exit-btn" id="exitBtn">← Surt</button>
   <div class="hint">Escolta…</div>
   <div class="pulse-ring" id="pulseRing"></div>
-  <div id="simBox">
-    <div style="color:#666;font-size:.8rem;margin-bottom:8px;">Simula que camines cap a la font:</div>
-    <input type="range" id="simSlider" min="0" max="500" step="1" value="500">
-    <div style="display:flex;justify-content:space-between;color:#444;font-size:.7rem;margin-top:4px;">
-      <span>a prop</span><span>lluny</span>
-    </div>
-  </div>
-  <div class="dbg" id="dbg"></div>
 </div>
 
 <!-- PANTALLA 3: ALARMA -->
@@ -187,10 +174,28 @@ function destPoint(lat,lon,bearing,dist){
 }
 
 /* ---------- Estat del joc ---------- */
-let target=null, initialDist=500, goalRadius=10, testMode=false, vibOn=true;
+let target=null, initialDist=500, goalRadius=10, vibOn=true;
 let watchId=null, geigerTimer=null, running=false, startTime=0, wakeLock=null;
 let lastDist=500;
 const minRate=0.6, maxRate=28; // clics/s lluny → a prop
+
+/* ---------- Color de proximitat ----------
+   Com més a prop de la font, el punt central passa de groc → taronja → vermell.
+   Si l'usuari s'allunya més enllà de la distància inicial, vira cap a blanc. */
+function mix(c1,c2,t){
+  t=Math.min(Math.max(t,0),1);
+  return [Math.round(c1[0]+(c2[0]-c1[0])*t),
+          Math.round(c1[1]+(c2[1]-c1[1])*t),
+          Math.round(c1[2]+(c2[2]-c1[2])*t)];
+}
+function proxColor(p){
+  const white=[255,255,255], groc=[247,208,0], taronja=[255,140,0], vermell=[226,58,46];
+  let c;
+  if(p<=0)        c=mix(groc,white,-p);          // s'allunya → blanc
+  else if(p<0.5)  c=mix(groc,taronja,p/0.5);     // s'aproxima → taronja
+  else            c=mix(taronja,vermell,(p-0.5)/0.5); // a prop → vermell
+  return 'rgb('+c[0]+','+c[1]+','+c[2]+')';
+}
 
 const $=id=>document.getElementById(id);
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
@@ -226,31 +231,13 @@ document.addEventListener('visibilitychange',()=>{ if(running&&document.visibili
 $('startBtn').onclick=()=>{
   ac();
   initialDist=+$('dist').value; goalRadius=+$('goal').value;
-  testMode=$('test').checked; vibOn=$('vib').checked;
+  vibOn=$('vib').checked;
   lastDist=initialDist;
   saveOpts();
   $('introErr').textContent='';
 
-  // ---- Mode simulació: sense GPS ----
-  if($('sim').checked){
-    target=true; startTime=Date.now(); running=true;
-    show('play');
-    $('simBox').style.display='block';
-    const sl=$('simSlider'); sl.max=initialDist; sl.value=initialDist;
-    if(testMode) $('dbg').textContent='Distància: '+initialDist+' m';
-    sl.oninput=()=>{
-      lastDist=+sl.value;
-      if(testMode) $('dbg').textContent='Distància: '+lastDist.toFixed(0)+' m';
-      if(lastDist<=goalRadius) reachTarget();
-    };
-    requestWake();
-    scheduleClick(currentRate(initialDist));
-    return;
-  }
-
   // ---- Mode GPS real ----
   if(!('geolocation' in navigator)){ $('introErr').textContent='Aquest dispositiu no permet geolocalització.'; return; }
-  $('simBox').style.display='none';
   $('introErr').textContent='Obtenint la teva posició…';
 
   navigator.geolocation.getCurrentPosition(pos=>{
@@ -279,19 +266,19 @@ function onMove(pos){
   const {latitude,longitude,accuracy}=pos.coords;
   const dist=haversine(latitude,longitude,target[0],target[1]);
   lastDist=dist;
-  if(testMode) $('dbg').textContent='Distància: '+dist.toFixed(0)+' m  ·  precisió ±'+Math.round(accuracy)+' m';
   if(dist<=goalRadius) reachTarget();
 }
-function onGeoErr(err){ if(testMode) $('dbg').textContent='Error GPS: '+err.message; }
+function onGeoErr(err){}
 
 const pulseRing=$('pulseRing');
 function scheduleClick(rate){
   if(!running) return;
   clickSound();
   // Senyal visual i hàptica sincronitzades amb el clic
+  const prox=1-lastDist/initialDist;   // 1 a prop, 0 a la distància inicial, <0 si s'allunya
+  pulseRing.style.setProperty('--tick', proxColor(prox));
   pulseRing.classList.remove('tick'); void pulseRing.offsetWidth; pulseRing.classList.add('tick');
   if(vibOn && navigator.vibrate){
-    const prox=Math.min(Math.max(1-lastDist/initialDist,0),1);
     if(prox>0.45) navigator.vibrate(Math.round(8+prox*22));
   }
   const delay=-Math.log(1-Math.random())/rate*1000; // intervals tipus Poisson
@@ -316,8 +303,6 @@ function cleanup(){
 
 $('exitBtn').onclick=()=>{
   cleanup();
-  $('dbg').textContent='';
-  $('simBox').style.display='none';
   show('intro');
 };
 
@@ -336,8 +321,6 @@ $('defuse').onclick=()=>{
 $('again').onclick=()=>{
   cleanup();
   $('introErr').textContent='';
-  $('dbg').textContent='';
-  $('simBox').style.display='none';
   show('intro');
 };
 </script>
