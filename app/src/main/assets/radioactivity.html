@@ -64,6 +64,24 @@
   #win{background:#001a06;}
   .win-title{color:var(--verd);font-size:1.9rem;font-weight:800;text-transform:uppercase;margin-bottom:14px;}
   .stat{color:#9fe;font-family:ui-monospace,monospace;font-size:.95rem;margin-bottom:6px;}
+  .linkbtn{background:none;color:var(--groc);font-size:.85rem;font-weight:600;letter-spacing:.5px;
+    text-transform:none;padding:10px;width:auto;max-width:none;}
+
+  /* ---------- HISTORIAL ---------- */
+  #history{justify-content:flex-start;padding-top:max(40px,env(safe-area-inset-top));}
+  #history h1{margin-bottom:18px;}
+  .hist-list{width:100%;max-width:360px;flex:1;overflow-y:auto;}
+  .hist-item{background:var(--panell);border:1px solid var(--vora);border-radius:12px;
+    padding:14px 16px;margin-bottom:12px;text-align:left;}
+  .hist-date{color:var(--groc);font-size:.8rem;font-weight:600;letter-spacing:.5px;margin-bottom:8px;}
+  .hist-row{display:flex;justify-content:space-between;font-size:.9rem;color:#bbb;
+    font-family:ui-monospace,monospace;margin-bottom:4px;}
+  .hist-row:last-child{margin-bottom:0;}
+  .hist-row span:last-child{color:var(--text);}
+  .hist-empty{color:#888;font-size:.9rem;margin-top:30px;}
+  .hist-actions{width:100%;max-width:360px;display:flex;gap:10px;margin-top:14px;}
+  .hist-actions button{flex:1;}
+  .hist-actions .ghost{background:none;color:#888;border:1px solid var(--vora);}
 </style>
 </head>
 <body>
@@ -93,6 +111,7 @@
   </div>
 
   <button id="startBtn">Comença la cerca</button>
+  <button class="linkbtn" id="histBtn">Veure historial</button>
   <div class="err" id="introErr"></div>
 </div>
 
@@ -115,7 +134,19 @@
   <div class="win-title">✓ Desactivada</div>
   <div class="stat" id="winTime"></div>
   <div class="stat" id="winDist"></div>
+  <div class="stat" id="winWalked"></div>
   <button id="again" style="margin-top:24px;">Torna a jugar</button>
+  <button class="linkbtn" id="winHistBtn">Veure historial</button>
+</div>
+
+<!-- PANTALLA 5: HISTORIAL -->
+<div class="screen" id="history">
+  <h1>Historial</h1>
+  <div class="hist-list" id="histList"></div>
+  <div class="hist-actions">
+    <button class="ghost" id="histClear">Esborra</button>
+    <button id="histBack">Torna</button>
+  </div>
 </div>
 
 <script>
@@ -177,6 +208,7 @@ function destPoint(lat,lon,bearing,dist){
 let target=null, initialDist=500, goalRadius=10, vibOn=true;
 let watchId=null, geigerTimer=null, running=false, startTime=0, wakeLock=null;
 let lastDist=500;
+let walkedDist=0, lastPos=null;   // distància realment caminada (acumulada via GPS)
 const minRate=0.6, maxRate=28; // clics/s lluny → a prop
 
 /* ---------- Color de proximitat ----------
@@ -214,6 +246,36 @@ function saveOpts(){
   try{localStorage.setItem(PREF,JSON.stringify({dist:$('dist').value,goal:$('goal').value,vib:$('vib').checked}));}catch(_){}
 }
 
+/* ---- Historial de partides ---- */
+const HIST='radioactiva-historial';
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(HIST)||'[]'); }catch(_){ return []; } }
+function saveHistEntry(entry){
+  const h=loadHist(); h.unshift(entry);
+  try{ localStorage.setItem(HIST,JSON.stringify(h.slice(0,50))); }catch(_){}
+}
+function fmtTime(s){ return Math.floor(s/60)+' min '+(s%60)+' s'; }
+function fmtDate(ts){
+  const d=new Date(ts), p=n=>String(n).padStart(2,'0');
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function renderHist(){
+  const h=loadHist(), box=$('histList');
+  if(!h.length){ box.innerHTML='<p class="hist-empty">Encara no has completat cap partida.</p>'; return; }
+  box.innerHTML=h.map(e=>'<div class="hist-item">'+
+    '<div class="hist-date">'+fmtDate(e.date)+'</div>'+
+    '<div class="hist-row"><span>Distància marcador</span><span>'+e.markerDist+' m</span></div>'+
+    '<div class="hist-row"><span>Distància caminada</span><span>'+Math.round(e.walkedDist)+' m</span></div>'+
+    '<div class="hist-row"><span>Temps</span><span>'+fmtTime(e.seconds)+'</span></div>'+
+  '</div>').join('');
+}
+function openHist(){ renderHist(); show('history'); }
+$('histBtn').onclick=openHist;
+$('winHistBtn').onclick=openHist;
+$('histBack').onclick=()=>show('intro');
+$('histClear').onclick=()=>{
+  if(confirm('Vols esborrar tot l\'historial?')){ try{localStorage.removeItem(HIST);}catch(_){} renderHist(); }
+};
+
 $('dist').oninput=()=>$('distV').textContent=$('dist').value+' m';
 $('goal').oninput=()=>$('goalV').textContent=$('goal').value+' m';
 loadOpts();
@@ -244,6 +306,7 @@ $('startBtn').onclick=()=>{
     const {latitude,longitude}=pos.coords;
     const bearing=Math.random()*360;
     target=destPoint(latitude,longitude,bearing,initialDist);
+    walkedDist=0; lastPos=[latitude,longitude];
     startTime=Date.now();
     running=true;
     $('introErr').textContent='';
@@ -264,6 +327,12 @@ function currentRate(dist){
 function onMove(pos){
   if(!running) return;
   const {latitude,longitude,accuracy}=pos.coords;
+  // Acumula la distància realment caminada; filtra el soroll del GPS i els salts impossibles.
+  if(lastPos){
+    const step=haversine(lastPos[0],lastPos[1],latitude,longitude);
+    if(step>=1 && step<200) walkedDist+=step;
+  }
+  lastPos=[latitude,longitude];
   const dist=haversine(latitude,longitude,target[0],target[1]);
   lastDist=dist;
   if(dist<=goalRadius) reachTarget();
@@ -332,8 +401,10 @@ $('defuse').onclick=()=>{
   releaseWake();
   if(navigator.vibrate) navigator.vibrate(60);
   const secs=Math.round((Date.now()-startTime)/1000);
-  $('winTime').textContent='Temps: '+Math.floor(secs/60)+' min '+(secs%60)+' s';
-  $('winDist').textContent='Recorregut inicial: ~'+initialDist+' m';
+  saveHistEntry({date:Date.now(), markerDist:initialDist, walkedDist:walkedDist, seconds:secs});
+  $('winTime').textContent='Temps: '+fmtTime(secs);
+  $('winDist').textContent='Distància marcador: ~'+initialDist+' m';
+  $('winWalked').textContent='Distància caminada: ~'+Math.round(walkedDist)+' m';
   show('win');
 };
 

@@ -16,6 +16,9 @@ Com es juga
 - **Distància inicial**: a quina distància es col·loca la font (100–1000 m).
 - **Radi d'arribada**: com de prop has d'estar per "trobar-la" (5–30 m).
 - **Vibració de proximitat**: el mòbil vibra més fort com més a prop ets.
+- **Historial**: cada partida completada es guarda (data, distància del marcador,
+  distància realment caminada i temps utilitzat) i es pot consultar des de la
+  pantalla d'inici o la pantalla final. Es desa localment al dispositiu.
 - **Mode de prova**: mostra la distància a la pantalla (per validar).
 - **Mode simulació**: juga sense GPS movent un control lliscant (per provar a casa).
 
