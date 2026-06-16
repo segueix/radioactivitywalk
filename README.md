@@ -1,26 +1,39 @@
 Font Radioactiva
 ================
 
-Joc Android: hi ha una **font radioactiva amagada** a prop teu i l'has de
-localitzar a cegues. L'app crea una ruta cap a un punt objectiu situat a una
-distància i direcció aleatòries; la pantalla queda negra i et guies només per
-la velocitat dels "clics" d'un comptador Geiger simulat — com més ràpid sonen,
-més a prop ets. Quan arribes a la font salta l'alarma nuclear i l'has de
-desactivar.
+Joc Android amb **dos modes** de localització a cegues. A la pantalla d'inici
+tries entre **Radioactivity** (a dalt) i **Radar** (a baix). Tots dos col·loquen
+un objectiu en un punt aleatori a la distància que demanis i et fan caminar-hi
+fins a sobre.
 
-El joc viu sencer dins `app/src/main/assets/radioactivity.html`. La part nativa
+L'app viu sencera dins `app/src/main/assets/radioactivity.html`. La part nativa
 (`MainActivity.kt`) només embolcalla aquesta pàgina en un WebView a pantalla
 completa i gestiona el permís de localització.
 
-Com es juga
+Radioactivity
+- Hi ha una **font radioactiva amagada** a prop teu. La pantalla queda negra i et
+  guies només per la velocitat dels "clics" d'un comptador Geiger simulat — com
+  més ràpid sonen, més a prop ets. Quan arribes salta l'alarma nuclear i l'has de
+  desactivar.
 - **Distància inicial**: a quina distància es col·loca la font (100–1000 m).
 - **Radi d'arribada**: com de prop has d'estar per "trobar-la" (5–30 m).
+
+Radar
+- El **radar** ha detectat una **mina** amagada que has de **desactivar**. A la
+  pantalla només veus el radar (les ones i el feix que gira) i un **punt** que
+  marca on és la mina: com més s'acosta al centre, més a prop ets, i sempre
+  apareix en la direcció correcta **segons cap a on mires** (brúixola del
+  dispositiu via `deviceorientation`). Cada escombrada sona com un **ping de
+  sonar**. En arribar a **5 m** apareix el botó de desactivació amb una **alarma
+  de submarí**.
+- **Distància inicial**: a quina distància es col·loca la mina (100–1000 m).
+
+Comú als dos modes
 - **Vibració de proximitat**: el mòbil vibra més fort com més a prop ets.
-- **Historial**: cada partida completada es guarda (data, distància del marcador,
-  distància realment caminada i temps utilitzat) i es pot consultar des de la
-  pantalla d'inici o la pantalla final. Es desa localment al dispositiu.
-- **Mode de prova**: mostra la distància a la pantalla (per validar).
-- **Mode simulació**: juga sense GPS movent un control lliscant (per provar a casa).
+- **Historial**: cada partida completada es guarda (data, tipus de joc
+  —Radioactivity o Radar—, distància del marcador, distància realment caminada i
+  temps utilitzat) i es pot consultar des de la pantalla d'inici o la final. Es
+  desa localment al dispositiu.
 
 Tecnologia
 - Geolocalització via HTML5 Geolocation API (`navigator.geolocation`) dins el WebView.
