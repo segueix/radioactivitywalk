@@ -18,10 +18,18 @@
     width:100%;height:100%;padding:28px;position:absolute;inset:0;overflow-y:auto;}
   .screen.active{display:flex;}
 
+  /* ---------- HOME (tria de joc) ---------- */
+  #home{justify-content:center;}
+  .menu-btn{margin-bottom:16px;}
+  .menu-btn.radar{background:var(--verd);}
+  .home-sub{color:#888;font-size:.85rem;margin-bottom:24px;letter-spacing:1px;text-transform:uppercase;}
+
   /* ---------- INTRO ---------- */
-  #intro{justify-content:flex-start;padding-top:max(40px,env(safe-area-inset-top));}
+  #intro,#radarIntro{justify-content:flex-start;padding-top:max(40px,env(safe-area-inset-top));}
   .trefoil{width:84px;height:84px;margin:6px 0 16px;filter:drop-shadow(0 0 18px rgba(247,208,0,.35));}
+  .radar-icon{filter:drop-shadow(0 0 18px rgba(58,208,106,.4));}
   h1{color:var(--groc);font-size:1.55rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+  h1.radar{color:var(--verd);}
   p.lead{max-width:360px;line-height:1.6;font-size:.95rem;color:#bbb;margin-bottom:22px;}
   p.lead b{color:var(--text);}
   .opts{background:var(--panell);border:1px solid var(--vora);border-radius:14px;padding:18px;margin-bottom:22px;width:100%;max-width:360px;}
@@ -29,15 +37,19 @@
   .opts label.row:last-of-type{margin-bottom:0;}
   .opts .control{display:flex;align-items:center;gap:10px;}
   .opts input[type=range]{width:120px;accent-color:var(--groc);}
+  #radarIntro .opts input[type=range]{accent-color:var(--verd);}
   .opts .v{color:var(--groc);font-family:ui-monospace,monospace;min-width:54px;text-align:right;}
+  #radarIntro .opts .v{color:var(--verd);}
   .check{display:flex;align-items:center;gap:9px;justify-content:flex-start;font-size:.85rem;color:#aaa;margin-top:14px;}
   .check input{width:18px;height:18px;accent-color:var(--groc);flex-shrink:0;}
+  #radarIntro .check input{accent-color:var(--verd);}
   button{
     background:var(--groc);color:#000;border:none;border-radius:12px;padding:16px 28px;
     font-size:1.05rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;
     transition:transform .1s;width:100%;max-width:360px;
   }
   button:active{transform:scale(.97);}
+  #radarStartBtn{background:var(--verd);}
   .err{color:var(--vermell);font-size:.85rem;margin-top:16px;max-width:340px;line-height:1.5;min-height:1em;}
 
   /* ---------- JOC (negre) ---------- */
@@ -46,7 +58,11 @@
   .pulse-ring{width:28px;height:28px;border-radius:50%;background:#1c1c1c;margin-top:26px;--tick:var(--groc);--tick-scale:2.4;--tick-glow:22px;}
   .pulse-ring.tick{animation:tick .12s ease-out;}
   @keyframes tick{0%{transform:scale(1);background:#1c1c1c;}40%{transform:scale(var(--tick-scale));background:var(--tick);box-shadow:0 0 var(--tick-glow) var(--tick);}100%{transform:scale(1);background:#1c1c1c;}}
-  .exit-btn{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;width:auto;background:none;color:#3a3a3a;font-size:.8rem;font-weight:600;letter-spacing:1px;padding:8px 10px;}
+  .exit-btn{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;width:auto;background:none;color:#3a3a3a;font-size:.8rem;font-weight:600;letter-spacing:1px;padding:8px 10px;z-index:5;}
+
+  /* ---------- RADAR ---------- */
+  #radarPlay{background:#000;justify-content:center;align-items:center;}
+  #radarCanvas{display:block;}
 
   /* ---------- ALARMA ---------- */
   #alarm{background:#1a0000;}
@@ -73,7 +89,12 @@
   .hist-list{width:100%;max-width:360px;flex:1;overflow-y:auto;}
   .hist-item{background:var(--panell);border:1px solid var(--vora);border-radius:12px;
     padding:14px 16px;margin-bottom:12px;text-align:left;}
-  .hist-date{color:var(--groc);font-size:.8rem;font-weight:600;letter-spacing:.5px;margin-bottom:8px;}
+  .hist-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .hist-date{color:#bbb;font-size:.8rem;font-weight:600;letter-spacing:.5px;}
+  .hist-badge{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+    padding:3px 8px;border-radius:999px;}
+  .badge-radio{color:#000;background:var(--groc);}
+  .badge-radar{color:#000;background:var(--verd);}
   .hist-row{display:flex;justify-content:space-between;font-size:.9rem;color:#bbb;
     font-family:ui-monospace,monospace;margin-bottom:4px;}
   .hist-row:last-child{margin-bottom:0;}
@@ -86,8 +107,26 @@
 </head>
 <body>
 
-<!-- PANTALLA 1: INTRO -->
-<div class="screen active" id="intro">
+<!-- PANTALLA 0: HOME (tria de joc) -->
+<div class="screen active" id="home">
+  <svg class="trefoil" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="#f7d000"/>
+    <g fill="#000">
+      <circle cx="50" cy="50" r="9"/>
+      <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z"/>
+      <path d="M50 50 L88.5 72 A45 45 0 0 0 88.5 28 Z" transform="rotate(120 50 50)"/>
+      <path d="M50 50 L88.5 72 A45 45 0 0 0 88.5 28 Z" transform="rotate(240 50 50)"/>
+    </g>
+  </svg>
+  <h1>Tria un joc</h1>
+  <p class="home-sub">Localització a cegues</p>
+  <button class="menu-btn radio" id="goRadio">Radioactivity</button>
+  <button class="menu-btn radar" id="goRadar">Radar</button>
+  <button class="linkbtn" id="homeHistBtn">Veure historial</button>
+</div>
+
+<!-- PANTALLA 1: INTRO RADIOACTIVITY -->
+<div class="screen" id="intro">
   <svg class="trefoil" viewBox="0 0 100 100">
     <circle cx="50" cy="50" r="48" fill="#f7d000"/>
     <g fill="#000">
@@ -111,27 +150,57 @@
   </div>
 
   <button id="startBtn">Comença la cerca</button>
-  <button class="linkbtn" id="histBtn">Veure historial</button>
+  <button class="linkbtn" id="introBack">← Tria un joc</button>
   <div class="err" id="introErr"></div>
 </div>
 
-<!-- PANTALLA 2: JOC -->
+<!-- PANTALLA 2: JOC RADIOACTIVITY -->
 <div class="screen" id="play">
   <button class="exit-btn" id="exitBtn">← Surt</button>
   <div class="hint">Escolta…</div>
   <div class="pulse-ring" id="pulseRing"></div>
 </div>
 
-<!-- PANTALLA 3: ALARMA -->
+<!-- PANTALLA 1b: INTRO RADAR -->
+<div class="screen" id="radarIntro">
+  <svg class="trefoil radar-icon" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#3ad06a" stroke-width="3"/>
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#3ad06a" stroke-width="2" opacity=".6"/>
+    <circle cx="50" cy="50" r="14" fill="none" stroke="#3ad06a" stroke-width="2" opacity=".4"/>
+    <line x1="50" y1="50" x2="50" y2="6" stroke="#3ad06a" stroke-width="3"/>
+    <circle cx="68" cy="30" r="5" fill="#3ad06a"/>
+  </svg>
+  <h1 class="radar">Radar de mines</h1>
+  <p class="lead">El <b>radar</b> ha detectat una <b>mina</b> amagada a prop teu que has de <b>desactivar</b>. A la pantalla només veuràs el radar: un punt marca on és la mina i en quina direcció <b>segons cap a on mires</b>. Com més s'acosta al centre, més a prop ets. Arriba a <b>5 m</b> i desactiva-la.</p>
+
+  <div class="opts">
+    <label class="row">Distància inicial
+      <span class="control"><input type="range" id="radarDist" min="100" max="1000" step="50" value="500"><span class="v" id="radarDistV">500 m</span></span>
+    </label>
+    <label class="check"><input type="checkbox" id="radarVib" checked> Vibració de proximitat</label>
+  </div>
+
+  <button id="radarStartBtn">Activa el radar</button>
+  <button class="linkbtn" id="radarBack">← Tria un joc</button>
+  <div class="err" id="radarErr"></div>
+</div>
+
+<!-- PANTALLA 2b: RADAR -->
+<div class="screen" id="radarPlay">
+  <button class="exit-btn" id="radarExitBtn">← Surt</button>
+  <canvas id="radarCanvas"></canvas>
+</div>
+
+<!-- PANTALLA 3: ALARMA (compartida) -->
 <div class="screen" id="alarm">
-  <div class="alarm-title">⚠ Alarma nuclear ⚠</div>
-  <div class="alarm-sub">Has trobat la font. Desactiva-la!</div>
+  <div class="alarm-title" id="alarmTitle">⚠ Alarma nuclear ⚠</div>
+  <div class="alarm-sub" id="alarmSub">Has trobat la font. Desactiva-la!</div>
   <button id="defuse">Desactiva</button>
 </div>
 
-<!-- PANTALLA 4: FINAL -->
+<!-- PANTALLA 4: FINAL (compartida) -->
 <div class="screen" id="win">
-  <div class="win-title">✓ Desactivada</div>
+  <div class="win-title" id="winTitle">✓ Desactivada</div>
   <div class="stat" id="winTime"></div>
   <div class="stat" id="winDist"></div>
   <div class="stat" id="winWalked"></div>
@@ -150,7 +219,7 @@
 </div>
 
 <script>
-/* ---------- Àudio (comptador Geiger + sirena) ---------- */
+/* ---------- Àudio (comptador Geiger + sirena + sonar/submarí) ---------- */
 let ctx;
 function ac(){
   if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
@@ -188,6 +257,45 @@ function startSiren(){
 }
 function stopSiren(){ if(siren){ try{siren.osc.stop();siren.lfo.stop();}catch(e){} siren=null; } }
 
+/* Ping de sonar: to sinusoidal amb caiguda llarga i lleuger glissando avall. */
+function sonarPing(intensity=0.5){
+  const a=ac(), t=a.currentTime;
+  const osc=a.createOscillator(); osc.type='sine';
+  osc.frequency.setValueAtTime(950,t);
+  osc.frequency.exponentialRampToValueAtTime(640,t+0.32);
+  const g=a.createGain();
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.32*intensity,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
+  osc.connect(g); g.connect(a.destination);
+  osc.start(t); osc.stop(t+0.62);
+}
+
+/* Alarma de submarí: claxon de dos tons ("ahooga") repetit. */
+let subAlarm=null;
+function startSubAlarm(){
+  const a=ac();
+  const osc=a.createOscillator(); osc.type='sawtooth';
+  const g=a.createGain(); g.gain.value=0.0001;
+  osc.connect(g); g.connect(a.destination);
+  osc.start();
+  let on=true;
+  const tick=()=>{
+    if(!subAlarm) return;
+    const t=a.currentTime;
+    osc.frequency.setValueAtTime(on?300:380,t);
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.28,t+0.05);
+    g.gain.setValueAtTime(0.28,t+0.42);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
+    on=!on;
+  };
+  subAlarm={osc,g,timer:setInterval(tick,600)};
+  tick();
+}
+function stopSubAlarm(){ if(subAlarm){ clearInterval(subAlarm.timer); try{subAlarm.osc.stop();}catch(e){} subAlarm=null; } }
+
 /* ---------- Geometria ---------- */
 const R=6371000;
 const toRad=d=>d*Math.PI/180;
@@ -203,13 +311,30 @@ function destPoint(lat,lon,bearing,dist){
   const o2=o1+Math.atan2(Math.sin(br)*Math.sin(dr)*Math.cos(l1), Math.cos(dr)-Math.sin(l1)*Math.sin(l2));
   return [toDeg(l2),toDeg(o2)];
 }
+/* Rumb (graus, 0 = nord, sentit horari) des d'un punt cap a un altre. */
+function bearingTo(lat1,lon1,lat2,lon2){
+  const p1=toRad(lat1), p2=toRad(lat2), dl=toRad(lon2-lon1);
+  const y=Math.sin(dl)*Math.cos(p2);
+  const x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+  return (toDeg(Math.atan2(y,x))+360)%360;
+}
 
-/* ---------- Estat del joc ---------- */
+/* ---------- Estat del joc (radioactivity) ---------- */
 let target=null, initialDist=500, goalRadius=10, vibOn=true;
 let watchId=null, geigerTimer=null, running=false, startTime=0, wakeLock=null;
 let lastDist=500;
 let walkedDist=0, lastPos=null;   // distància realment caminada (acumulada via GPS)
 const minRate=0.6, maxRate=28; // clics/s lluny → a prop
+
+/* ---------- Estat del joc (radar) ---------- */
+const RADAR_GOAL=5;               // distància (m) a la qual la mina es pot desactivar
+let radarTarget=null, radarInitialDist=500, radarVibOn=true;
+let radarWatchId=null, radarRunning=false, radarStart=0;
+let radarDist=500, radarPos=null, radarLastPos=null, radarWalked=0;
+let radarHeading=0, hasAbsolute=false, radarRAF=null, lastFrame=0, sweep=0;
+let radarCtx=null, radarSize=0;
+
+let gameMode='radio';             // 'radio' | 'radar' — control de l'alarma/final compartits
 
 /* ---------- Color de proximitat ----------
    Com més a prop de la font, el punt central passa de groc → taronja → vermell.
@@ -240,10 +365,15 @@ function loadOpts(){
     if(o.dist)$('dist').value=o.dist;
     if(o.goal)$('goal').value=o.goal;
     if(typeof o.vib==='boolean')$('vib').checked=o.vib;
+    if(o.radarDist)$('radarDist').value=o.radarDist;
+    if(typeof o.radarVib==='boolean')$('radarVib').checked=o.radarVib;
   }catch(_){}
 }
 function saveOpts(){
-  try{localStorage.setItem(PREF,JSON.stringify({dist:$('dist').value,goal:$('goal').value,vib:$('vib').checked}));}catch(_){}
+  try{localStorage.setItem(PREF,JSON.stringify({
+    dist:$('dist').value,goal:$('goal').value,vib:$('vib').checked,
+    radarDist:$('radarDist').value,radarVib:$('radarVib').checked
+  }));}catch(_){}
 }
 
 /* ---- Historial de partides ---- */
@@ -261,35 +391,98 @@ function fmtDate(ts){
 function renderHist(){
   const h=loadHist(), box=$('histList');
   if(!h.length){ box.innerHTML='<p class="hist-empty">Encara no has completat cap partida.</p>'; return; }
-  box.innerHTML=h.map(e=>'<div class="hist-item">'+
-    '<div class="hist-date">'+fmtDate(e.date)+'</div>'+
-    '<div class="hist-row"><span>Distància marcador</span><span>'+e.markerDist+' m</span></div>'+
-    '<div class="hist-row"><span>Distància caminada</span><span>'+Math.round(e.walkedDist)+' m</span></div>'+
-    '<div class="hist-row"><span>Temps</span><span>'+fmtTime(e.seconds)+'</span></div>'+
-  '</div>').join('');
+  box.innerHTML=h.map(e=>{
+    const radar=e.mode==='radar';
+    const label=radar?'Radar':'Radioactivity';
+    const cls=radar?'badge-radar':'badge-radio';
+    return '<div class="hist-item">'+
+      '<div class="hist-top"><span class="hist-date">'+fmtDate(e.date)+'</span>'+
+        '<span class="hist-badge '+cls+'">'+label+'</span></div>'+
+      '<div class="hist-row"><span>Distància marcador</span><span>'+e.markerDist+' m</span></div>'+
+      '<div class="hist-row"><span>Distància caminada</span><span>'+Math.round(e.walkedDist)+' m</span></div>'+
+      '<div class="hist-row"><span>Temps</span><span>'+fmtTime(e.seconds)+'</span></div>'+
+    '</div>';
+  }).join('');
 }
 function openHist(){ renderHist(); show('history'); }
-$('histBtn').onclick=openHist;
+$('homeHistBtn').onclick=openHist;
 $('winHistBtn').onclick=openHist;
-$('histBack').onclick=()=>show('intro');
+$('histBack').onclick=()=>show('home');
 $('histClear').onclick=()=>{
   if(confirm('Vols esborrar tot l\'historial?')){ try{localStorage.removeItem(HIST);}catch(_){} renderHist(); }
 };
 
+/* ---- Navegació del menú ---- */
+$('goRadio').onclick=()=>{ $('introErr').textContent=''; show('intro'); };
+$('goRadar').onclick=()=>{ $('radarErr').textContent=''; show('radarIntro'); };
+$('introBack').onclick=()=>show('home');
+$('radarBack').onclick=()=>show('home');
+
 $('dist').oninput=()=>$('distV').textContent=$('dist').value+' m';
 $('goal').oninput=()=>$('goalV').textContent=$('goal').value+' m';
+$('radarDist').oninput=()=>$('radarDistV').textContent=$('radarDist').value+' m';
 loadOpts();
 $('distV').textContent=$('dist').value+' m';
 $('goalV').textContent=$('goal').value+' m';
+$('radarDistV').textContent=$('radarDist').value+' m';
 
 /* ---- Manté la pantalla encesa durant la cerca ---- */
 async function requestWake(){
   try{ if('wakeLock' in navigator){ wakeLock=await navigator.wakeLock.request('screen'); } }catch(_){}
 }
 function releaseWake(){ try{ wakeLock&&wakeLock.release(); }catch(_){} wakeLock=null; }
-document.addEventListener('visibilitychange',()=>{ if(running&&document.visibilityState==='visible'&&!wakeLock) requestWake(); });
+document.addEventListener('visibilitychange',()=>{ if((running||radarRunning)&&document.visibilityState==='visible'&&!wakeLock) requestWake(); });
 
-/* ---------- Inici ---------- */
+/* ====================================================================
+   ALARMA + FINAL (compartits entre Radioactivity i Radar)
+   ==================================================================== */
+function goAlarm(mode){
+  gameMode=mode;
+  if(mode==='radar'){
+    $('alarmTitle').textContent='⚠ Mina detectada ⚠';
+    $('alarmSub').textContent='Ets sobre la mina. Desactiva-la!';
+    startSubAlarm();
+  }else{
+    $('alarmTitle').textContent='⚠ Alarma nuclear ⚠';
+    $('alarmSub').textContent='Has trobat la font. Desactiva-la!';
+    startSiren();
+  }
+  if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
+  show('alarm'); $('alarm').classList.add('flash');
+}
+
+$('defuse').onclick=()=>{
+  stopSiren(); stopSubAlarm();
+  $('alarm').classList.remove('flash');
+  if(navigator.vibrate) navigator.vibrate(60);
+  let secs, marker, walked;
+  if(gameMode==='radar'){
+    if(radarWatchId!=null){ navigator.geolocation.clearWatch(radarWatchId); radarWatchId=null; }
+    cancelAnimationFrame(radarRAF); removeOrient(); releaseWake();
+    secs=Math.round((Date.now()-radarStart)/1000); marker=radarInitialDist; walked=radarWalked;
+    $('winTitle').textContent='✓ Mina desactivada';
+  }else{
+    if(watchId!=null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+    releaseWake();
+    secs=Math.round((Date.now()-startTime)/1000); marker=initialDist; walked=walkedDist;
+    $('winTitle').textContent='✓ Desactivada';
+  }
+  saveHistEntry({date:Date.now(), mode:gameMode, markerDist:marker, walkedDist:walked, seconds:secs});
+  $('winTime').textContent='Temps: '+fmtTime(secs);
+  $('winDist').textContent='Distància marcador: ~'+marker+' m';
+  $('winWalked').textContent='Distància caminada: ~'+Math.round(walked)+' m';
+  show('win');
+};
+
+$('again').onclick=()=>{
+  cleanup(); radarCleanup();
+  $('introErr').textContent=''; $('radarErr').textContent='';
+  show('home');
+};
+
+/* ====================================================================
+   JOC RADIOACTIVITY
+   ==================================================================== */
 $('startBtn').onclick=()=>{
   ac();
   initialDist=+$('dist').value; goalRadius=+$('goal').value;
@@ -298,7 +491,6 @@ $('startBtn').onclick=()=>{
   saveOpts();
   $('introErr').textContent='';
 
-  // ---- Mode GPS real ----
   if(!('geolocation' in navigator)){ $('introErr').textContent='Aquest dispositiu no permet geolocalització.'; return; }
   $('introErr').textContent='Obtenint la teva posició…';
 
@@ -376,9 +568,7 @@ function scheduleClick(rate){
 function reachTarget(){
   running=false;
   clearTimeout(geigerTimer); clearTimeout(weakTimer);
-  if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
-  show('alarm'); $('alarm').classList.add('flash');
-  startSiren();
+  goAlarm('radio');
 }
 
 function cleanup(){
@@ -391,27 +581,164 @@ function cleanup(){
 
 $('exitBtn').onclick=()=>{
   cleanup();
-  show('intro');
+  show('home');
 };
 
-$('defuse').onclick=()=>{
-  stopSiren();
-  $('alarm').classList.remove('flash');
-  if(watchId!=null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+/* ====================================================================
+   JOC RADAR
+   ==================================================================== */
+/* Brúixola: orientació del dispositiu → rumb cap on apunta la part superior. */
+function onOrient(e){
+  let h=null, abs=(e.type==='deviceorientationabsolute')||e.absolute===true;
+  if(typeof e.webkitCompassHeading==='number' && !isNaN(e.webkitCompassHeading)){ h=e.webkitCompassHeading; abs=true; }
+  else if(typeof e.alpha==='number'){ h=360-e.alpha; }   // alpha augmenta en sentit antihorari
+  if(h==null || isNaN(h)) return;
+  if(abs) hasAbsolute=true;
+  else if(hasAbsolute) return;     // si tenim brúixola absoluta, ignora la relativa
+  radarHeading=((h%360)+360)%360;
+}
+function addOrient(){
+  hasAbsolute=false; radarHeading=0;
+  window.addEventListener('deviceorientationabsolute',onOrient,true);
+  window.addEventListener('deviceorientation',onOrient,true);
+}
+function removeOrient(){
+  window.removeEventListener('deviceorientationabsolute',onOrient,true);
+  window.removeEventListener('deviceorientation',onOrient,true);
+}
+
+function setupRadarCanvas(){
+  const c=$('radarCanvas'), dpr=window.devicePixelRatio||1;
+  const size=Math.max(160, Math.min(window.innerWidth, window.innerHeight)-40);
+  c.style.width=size+'px'; c.style.height=size+'px';
+  c.width=Math.round(size*dpr); c.height=Math.round(size*dpr);
+  const g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
+  radarCtx=g; radarSize=size;
+}
+window.addEventListener('resize',()=>{ if(radarRunning) setupRadarCanvas(); });
+
+/* Ha passat el feix (angle creixent) per l'angle `tg` entre prev i cur? (mod 2π) */
+function sweptPast(prev,cur,tg){
+  const TAU=Math.PI*2;
+  prev=((prev%TAU)+TAU)%TAU; cur=((cur%TAU)+TAU)%TAU; tg=((tg%TAU)+TAU)%TAU;
+  return prev<=cur ? (tg>prev && tg<=cur) : (tg>prev || tg<=cur);
+}
+
+function drawRadar(now){
+  if(!radarRunning) return;
+  const g=radarCtx, S=radarSize, cx=S/2, cy=S/2, maxR=S/2-6, TAU=Math.PI*2;
+  const dt = lastFrame ? Math.min((now-lastFrame)/1000, 0.1) : 0; lastFrame=now;
+  const prev=sweep;
+  sweep=(sweep + (TAU/3)*dt) % TAU;            // una volta cada ~3 s
+
+  // fons
+  g.clearRect(0,0,S,S);
+  g.fillStyle='#02160a'; g.beginPath(); g.arc(cx,cy,maxR,0,TAU); g.fill();
+
+  // anells (les "ones" del radar) i creu
+  g.strokeStyle='rgba(60,255,120,0.22)'; g.lineWidth=1;
+  for(let i=1;i<=4;i++){ g.beginPath(); g.arc(cx,cy,maxR*i/4,0,TAU); g.stroke(); }
+  g.beginPath(); g.moveTo(cx-maxR,cy); g.lineTo(cx+maxR,cy);
+  g.moveTo(cx,cy-maxR); g.lineTo(cx,cy+maxR); g.stroke();
+
+  // estela del feix
+  for(let k=13;k>=0;k--){
+    const a=sweep - k*0.045;
+    g.strokeStyle='rgba(80,255,140,'+(0.16*(1-k/14)).toFixed(3)+')'; g.lineWidth=2;
+    g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+maxR*Math.sin(a), cy-maxR*Math.cos(a)); g.stroke();
+  }
+  // feix principal
+  g.strokeStyle='rgba(160,255,190,0.9)'; g.lineWidth=2;
+  g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+maxR*Math.sin(sweep), cy-maxR*Math.cos(sweep)); g.stroke();
+
+  // punt central (l'usuari)
+  g.fillStyle='rgba(160,255,190,0.85)'; g.beginPath(); g.arc(cx,cy,3,0,TAU); g.fill();
+
+  // blip de la mina
+  if(radarPos && radarTarget){
+    const bearing=bearingTo(radarPos[0],radarPos[1],radarTarget[0],radarTarget[1]);
+    const rel=toRad(((bearing - radarHeading)%360+360)%360);   // direcció relativa a on mires
+    const norm=Math.min(radarDist/radarInitialDist,1);          // 1 lluny … 0 a sobre
+    const rr=norm*maxR;
+    const bx=cx+rr*Math.sin(rel), by=cy-rr*Math.cos(rel);
+
+    // s'il·lumina just quan el feix hi passa i s'apaga després
+    const behind=((sweep - rel)%TAU+TAU)%TAU;                   // quant fa que el feix l'ha passat
+    const glow=Math.max(0, 1 - behind/(Math.PI*0.6));
+    const bright=0.4+0.6*glow;
+
+    if(sweptPast(prev,sweep,rel)){
+      sonarPing(0.3+0.6*(1-norm));
+      if(radarVibOn && navigator.vibrate && norm<0.5) navigator.vibrate(Math.round(10+(1-norm)*35));
+    }
+
+    g.shadowColor='rgba(120,255,160,'+bright.toFixed(2)+')'; g.shadowBlur=18*bright;
+    g.fillStyle='rgba(150,255,180,'+bright.toFixed(2)+')';
+    g.beginPath(); g.arc(bx,by, 6+4*glow, 0, TAU); g.fill();
+    g.shadowBlur=0;
+  }
+
+  radarRAF=requestAnimationFrame(drawRadar);
+}
+
+$('radarStartBtn').onclick=()=>{
+  ac();
+  radarInitialDist=+$('radarDist').value;
+  radarVibOn=$('radarVib').checked;
+  radarDist=radarInitialDist;
+  saveOpts();
+  $('radarErr').textContent='';
+
+  if(!('geolocation' in navigator)){ $('radarErr').textContent='Aquest dispositiu no permet geolocalització.'; return; }
+  $('radarErr').textContent='Obtenint la teva posició…';
+
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude,longitude}=pos.coords;
+    const bearing=Math.random()*360;
+    radarTarget=destPoint(latitude,longitude,bearing,radarInitialDist);   // punt aleatori a la distància demanada
+    radarWalked=0; radarLastPos=[latitude,longitude]; radarPos=[latitude,longitude];
+    radarStart=Date.now(); radarRunning=true; lastFrame=0; sweep=0;
+    $('radarErr').textContent='';
+    show('radarPlay');
+    setupRadarCanvas(); requestWake(); addOrient();
+    radarWatchId=navigator.geolocation.watchPosition(onRadarMove,()=>{},{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+    radarRAF=requestAnimationFrame(drawRadar);
+  }, err=>{
+    $('radarErr').textContent='No s\'ha pogut accedir a la ubicació ('+err.message+'). Cal donar permís de localització.';
+  }, {enableHighAccuracy:true,timeout:20000});
+};
+
+function onRadarMove(pos){
+  if(!radarRunning) return;
+  const {latitude,longitude}=pos.coords;
+  if(radarLastPos){
+    const step=haversine(radarLastPos[0],radarLastPos[1],latitude,longitude);
+    if(step>=1 && step<200) radarWalked+=step;
+  }
+  radarLastPos=[latitude,longitude]; radarPos=[latitude,longitude];
+  radarDist=haversine(latitude,longitude,radarTarget[0],radarTarget[1]);
+  if(radarDist<=RADAR_GOAL) radarReach();
+}
+
+function radarReach(){
+  radarRunning=false;
+  cancelAnimationFrame(radarRAF);
+  removeOrient();
+  goAlarm('radar');
+}
+
+function radarCleanup(){
+  radarRunning=false;
+  cancelAnimationFrame(radarRAF);
+  stopSubAlarm();
+  removeOrient();
+  if(radarWatchId!=null){ navigator.geolocation.clearWatch(radarWatchId); radarWatchId=null; }
   releaseWake();
-  if(navigator.vibrate) navigator.vibrate(60);
-  const secs=Math.round((Date.now()-startTime)/1000);
-  saveHistEntry({date:Date.now(), markerDist:initialDist, walkedDist:walkedDist, seconds:secs});
-  $('winTime').textContent='Temps: '+fmtTime(secs);
-  $('winDist').textContent='Distància marcador: ~'+initialDist+' m';
-  $('winWalked').textContent='Distància caminada: ~'+Math.round(walkedDist)+' m';
-  show('win');
-};
+}
 
-$('again').onclick=()=>{
-  cleanup();
-  $('introErr').textContent='';
-  show('intro');
+$('radarExitBtn').onclick=()=>{
+  radarCleanup();
+  show('home');
 };
 </script>
 </body>
