@@ -63,6 +63,14 @@
   /* ---------- RADAR ---------- */
   #radarPlay{background:#000;justify-content:center;align-items:center;}
   #radarCanvas{display:block;}
+  /* Brúixola (cantonada superior dreta) — gira amb el giroscopi i marca el nord */
+  #radarCompass{position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;
+    width:66px;height:66px;z-index:6;pointer-events:none;filter:drop-shadow(0 0 7px rgba(58,208,106,.35));}
+  #radarCompass svg{display:block;width:100%;height:100%;}
+  #radarCompassDial{transform-box:fill-box;transform-origin:50% 50%;will-change:transform;}
+  #radarCompass .cref{fill:#e8e8e8;}
+  #radarCompass .cN{fill:#fff;font:700 13px sans-serif;text-anchor:middle;}
+  #radarCompass .cdir{fill:#9fe3b6;font:600 9px sans-serif;text-anchor:middle;}
 
   /* ---------- ALARMA ---------- */
   #alarm{background:#1a0000;}
@@ -171,7 +179,7 @@
     <circle cx="68" cy="30" r="5" fill="#3ad06a"/>
   </svg>
   <h1 class="radar">Radar de mines</h1>
-  <p class="lead">El <b>radar</b> ha detectat una <b>mina</b> amagada a prop teu que has de <b>desactivar</b>. A la pantalla només veuràs el radar: un punt marca on és la mina i en quina direcció <b>segons cap a on mires</b>. Com més s'acosta al centre, més a prop ets. Arriba a <b>5 m</b> i desactiva-la.</p>
+  <p class="lead">El <b>radar</b> ha detectat una <b>mina</b> amagada a prop teu que has de <b>desactivar</b>. La mina queda <b>fixa al mapa</b>: el radar es dibuixa amb el <b>nord sempre cap amunt</b> i un punt marca on és. Fes servir la <b>brúixola</b> de la cantonada per saber cap on és el nord i orientar-te. Com més s'acosta al centre, més a prop ets. Arriba a <b>5 m</b> i desactiva-la.</p>
 
   <div class="opts">
     <label class="row">Distància inicial
@@ -188,6 +196,23 @@
 <!-- PANTALLA 2b: RADAR -->
 <div class="screen" id="radarPlay">
   <button class="exit-btn" id="radarExitBtn">← Surt</button>
+  <div id="radarCompass" aria-hidden="true">
+    <svg viewBox="0 0 100 100">
+      <!-- marca fixa (apunta cap on mires) -->
+      <polygon class="cref" points="50,1 45,11 55,11"/>
+      <!-- dial giratori: la 'N' sempre assenyala el nord real -->
+      <g id="radarCompassDial">
+        <circle cx="50" cy="50" r="45" fill="rgba(2,20,9,0.92)" stroke="#3ad06a" stroke-width="2"/>
+        <polygon points="50,15 43,50 57,50" fill="#e23a2e"/>
+        <polygon points="50,85 43,50 57,50" fill="#2c7a47"/>
+        <circle cx="50" cy="50" r="3.5" fill="#0a0a0a" stroke="#3ad06a" stroke-width="1.2"/>
+        <text x="50" y="33" class="cN">N</text>
+        <text x="50" y="79" class="cdir">S</text>
+        <text x="79" y="54" class="cdir">E</text>
+        <text x="21" y="54" class="cdir">O</text>
+      </g>
+    </svg>
+  </div>
   <canvas id="radarCanvas"></canvas>
 </div>
 
@@ -331,8 +356,11 @@ const RADAR_GOAL=5;               // distància (m) a la qual la mina es pot des
 let radarTarget=null, radarInitialDist=500, radarVibOn=true;
 let radarWatchId=null, radarRunning=false, radarStart=0;
 let radarDist=500, radarPos=null, radarLastPos=null, radarWalked=0;
-let radarHeading=0, hasAbsolute=false, radarRAF=null, lastFrame=0, sweep=0;
-let radarCtx=null, radarSize=0;
+let radarHeading=0, radarHeadingSmooth=0, hasAbsolute=false, radarRAF=null, lastFrame=0, sweep=0;
+let radarCtx=null, radarSize=0, radarCompassDial=null;
+
+/* Interpola angles pel camí més curt (evita el salt 359°→0°). */
+function lerpAngle(a,b,t){ const d=((b-a+540)%360)-180; return a+d*t; }
 
 let gameMode='radio';             // 'radio' | 'radar' — control de l'alarma/final compartits
 
@@ -614,6 +642,7 @@ function setupRadarCanvas(){
   c.width=Math.round(size*dpr); c.height=Math.round(size*dpr);
   const g=c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0);
   radarCtx=g; radarSize=size;
+  if(!radarCompassDial) radarCompassDial=$('radarCompassDial');
 }
 window.addEventListener('resize',()=>{ if(radarRunning) setupRadarCanvas(); });
 
@@ -630,6 +659,10 @@ function drawRadar(now){
   const dt = lastFrame ? Math.min((now-lastFrame)/1000, 0.1) : 0; lastFrame=now;
   const prev=sweep;
   sweep=(sweep + (TAU/3)*dt) % TAU;            // una volta cada ~3 s
+
+  // brúixola: suavitza el rumb i gira el dial perquè la 'N' marqui el nord real
+  radarHeadingSmooth=lerpAngle(radarHeadingSmooth, radarHeading, 0.18);
+  if(radarCompassDial) radarCompassDial.style.transform='rotate('+(-radarHeadingSmooth).toFixed(1)+'deg)';
 
   // fons
   g.clearRect(0,0,S,S);
@@ -657,7 +690,7 @@ function drawRadar(now){
   // blip de la mina
   if(radarPos && radarTarget){
     const bearing=bearingTo(radarPos[0],radarPos[1],radarTarget[0],radarTarget[1]);
-    const rel=toRad(((bearing - radarHeading)%360+360)%360);   // direcció relativa a on mires
+    const rel=toRad(((bearing%360)+360)%360);                  // nord-up: la mina queda fixa al mapa
     const norm=Math.min(radarDist/radarInitialDist,1);          // 1 lluny … 0 a sobre
     const rr=norm*maxR;
     const bx=cx+rr*Math.sin(rel), by=cy-rr*Math.cos(rel);
@@ -697,7 +730,7 @@ $('radarStartBtn').onclick=()=>{
     const bearing=Math.random()*360;
     radarTarget=destPoint(latitude,longitude,bearing,radarInitialDist);   // punt aleatori a la distància demanada
     radarWalked=0; radarLastPos=[latitude,longitude]; radarPos=[latitude,longitude];
-    radarStart=Date.now(); radarRunning=true; lastFrame=0; sweep=0;
+    radarStart=Date.now(); radarRunning=true; lastFrame=0; sweep=0; radarHeadingSmooth=0;
     $('radarErr').textContent='';
     show('radarPlay');
     setupRadarCanvas(); requestWake(); addOrient();
