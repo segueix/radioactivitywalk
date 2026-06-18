@@ -12,18 +12,21 @@ completa i gestiona el permís de localització.
 
 Radioactivity
 - Hi ha una **font radioactiva amagada** a prop teu. La pantalla queda negra i et
-  guies només per la velocitat dels "clics" d'un comptador Geiger simulat — com
-  més ràpid sonen, més a prop ets. Quan arribes salta l'alarma nuclear i l'has de
-  desactivar.
+  guies per la velocitat dels "clics" d'un comptador Geiger simulat — com més
+  ràpid sonen, més a prop ets — i per una **boira verda** que apareix a la vora o
+  cantonada **en la direcció de la font** (segons cap a on mires, via la brúixola
+  del dispositiu) i que s'intensifica a mesura que t'hi acostes. Quan arribes
+  salta l'alarma nuclear i l'has de desactivar.
 - **Distància inicial**: a quina distància es col·loca la font (100–1000 m).
 - **Radi d'arribada**: com de prop has d'estar per "trobar-la" (5–30 m).
 
 Radar
 - El **radar** ha detectat una **mina** amagada que has de **desactivar**. A la
   pantalla només veus el radar (les ones i el feix que gira) i un **punt** que
-  marca on és la mina: com més s'acosta al centre, més a prop ets, i sempre
-  apareix en la direcció correcta **segons cap a on mires** (brúixola del
-  dispositiu via `deviceorientation`). Cada escombrada sona com un **ping de
+  marca on és la mina: la mina és el **punt fix del terreny** i el radar **gira
+  amb tu**, de manera que el punt apareix **a dalt de tot** quan mires cap a ella
+  i es reubica si gires o et desvies cap a un costat (brúixola del dispositiu via
+  `deviceorientation`). Com més s'acosta al centre, més a prop ets. Cada escombrada sona com un **ping de
   sonar**. En arribar a **5 m** apareix el botó de desactivació amb una **alarma
   de submarí**.
 - **Distància inicial**: a quina distància es col·loca la mina (100–1000 m).

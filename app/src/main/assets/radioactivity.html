@@ -53,7 +53,11 @@
   .err{color:var(--vermell);font-size:.85rem;margin-top:16px;max-width:340px;line-height:1.5;min-height:1em;}
 
   /* ---------- JOC (negre) ---------- */
-  #play{background:#000;justify-content:center;}
+  #play{background:#000;justify-content:center;overflow:hidden;}
+  /* Boira de radiació: resplendor que apareix a la vora/cantonada cap on és la font */
+  #radioFog{position:absolute;inset:0;z-index:0;opacity:0;transition:opacity .5s ease;
+    pointer-events:none;mix-blend-mode:screen;}
+  .hint,.pulse-ring{position:relative;z-index:1;}
   .hint{color:#2a2a2a;font-size:.9rem;letter-spacing:3px;text-transform:uppercase;}
   .pulse-ring{width:28px;height:28px;border-radius:50%;background:#1c1c1c;margin-top:26px;--tick:var(--groc);--tick-scale:2.4;--tick-glow:22px;}
   .pulse-ring.tick{animation:tick .12s ease-out;}
@@ -145,7 +149,7 @@
     </g>
   </svg>
   <h1>Font Radioactiva</h1>
-  <p class="lead">Has creat una ruta cap a una <b>font radioactiva amagada</b> a prop teu. La pantalla quedarà negra: guia't <b>només per la velocitat dels clics</b>. Com més ràpid sonen, més a prop ets. Arriba-hi i desactiva l'alarma.</p>
+  <p class="lead">Has creat una ruta cap a una <b>font radioactiva amagada</b> a prop teu. La pantalla quedarà negra: guia't <b>per la velocitat dels clics</b> i per la <b>boira verda</b> que apareix a la vora cap on és la font. Com més ràpid sonen i més intensa és la boira, més a prop ets. Arriba-hi i desactiva l'alarma.</p>
 
   <div class="opts">
     <label class="row">Distància inicial
@@ -164,6 +168,7 @@
 
 <!-- PANTALLA 2: JOC RADIOACTIVITY -->
 <div class="screen" id="play">
+  <div id="radioFog"></div>
   <button class="exit-btn" id="exitBtn">← Surt</button>
   <div class="hint">Escolta…</div>
   <div class="pulse-ring" id="pulseRing"></div>
@@ -179,7 +184,7 @@
     <circle cx="68" cy="30" r="5" fill="#3ad06a"/>
   </svg>
   <h1 class="radar">Radar de mines</h1>
-  <p class="lead">El <b>radar</b> ha detectat una <b>mina</b> amagada a prop teu que has de <b>desactivar</b>. La mina queda <b>fixa al mapa</b>: el radar es dibuixa amb el <b>nord sempre cap amunt</b> i un punt marca on és. Fes servir la <b>brúixola</b> de la cantonada per saber cap on és el nord i orientar-te. Com més s'acosta al centre, més a prop ets. Arriba a <b>5 m</b> i desactiva-la.</p>
+  <p class="lead">El <b>radar</b> ha detectat una <b>mina</b> amagada a prop teu que has de <b>desactivar</b>. La mina queda <b>fixa al terreny</b>, però el radar <b>gira amb tu</b>: el punt apareix <b>a dalt de tot</b> quan mires cap a la mina i es <b>reubica</b> si gires o et desvies cap a un costat. La <b>brúixola</b> de la cantonada t'indica on és el nord. Com més s'acosta al centre, més a prop ets. Arriba a <b>5 m</b> i desactiva-la.</p>
 
   <div class="opts">
     <label class="row">Distància inicial
@@ -356,8 +361,13 @@ const RADAR_GOAL=5;               // distància (m) a la qual la mina es pot des
 let radarTarget=null, radarInitialDist=500, radarVibOn=true;
 let radarWatchId=null, radarRunning=false, radarStart=0;
 let radarDist=500, radarPos=null, radarLastPos=null, radarWalked=0;
-let radarHeading=0, radarHeadingSmooth=0, hasAbsolute=false, radarRAF=null, lastFrame=0, sweep=0;
+let radarHeadingSmooth=0, hasAbsolute=false, radarRAF=null, lastFrame=0, sweep=0;
 let radarCtx=null, radarSize=0, radarCompassDial=null;
+
+/* Rumb del dispositiu (brúixola), compartit pels dos jocs. */
+let deviceHeading=0;
+/* Estat de la boira de radiació (radioactivity). */
+let radioHeadingSmooth=0, radioRAF=null, radioFogEl=null;
 
 /* Interpola angles pel camí més curt (evita el salt 359°→0°). */
 function lerpAngle(a,b,t){ const d=((b-a+540)%360)-180; return a+d*t; }
@@ -532,6 +542,8 @@ $('startBtn').onclick=()=>{
     $('introErr').textContent='';
     show('play');
     requestWake();
+    radioHeadingSmooth=0; radioFogEl=$('radioFog'); addOrient();
+    radioRAF=requestAnimationFrame(drawRadioFog);
     scheduleClick(currentRate(initialDist));
     watchId=navigator.geolocation.watchPosition(onMove,onGeoErr,{enableHighAccuracy:true,maximumAge:0,timeout:20000});
   }, err=>{
@@ -593,15 +605,45 @@ function scheduleClick(rate){
   geigerTimer=setTimeout(()=>scheduleClick(currentRate(lastDist)), Math.max(delay,extra));
 }
 
+/* Boira de radiació: resplendor verda que surt de la vora/cantonada cap on és la
+   font (rumb relatiu a cap on mires) i que s'intensifica a mesura que t'hi acostes. */
+function drawRadioFog(){
+  if(!running) return;
+  radioHeadingSmooth=lerpAngle(radioHeadingSmooth, deviceHeading, 0.15);
+  if(radioFogEl && lastPos && target){
+    const bearing=bearingTo(lastPos[0],lastPos[1],target[0],target[1]);
+    const rel=toRad((((bearing-radioHeadingSmooth)%360)+360)%360);   // 0 = al davant (a dalt)
+    const prox=Math.min(Math.max(1-lastDist/initialDist,0),1);        // 0 lluny … 1 a sobre
+    // centre del degradat empès més enllà de la vora en la direcció de la font
+    const x=(50+62*Math.sin(rel)).toFixed(1);
+    const y=(50-62*Math.cos(rel)).toFixed(1);
+    const reach=Math.round(35+45*prox);                              // s'eixampla en acostar-s'hi
+    const a=0.16+0.6*prox;
+    radioFogEl.style.background='radial-gradient(circle at '+x+'% '+y+'%, '+
+      'rgba(150,255,120,'+a.toFixed(2)+') 0%, '+
+      'rgba(90,210,80,'+(a*0.5).toFixed(2)+') '+Math.round(reach*0.45)+'%, '+
+      'rgba(40,120,50,0) '+reach+'%)';
+    radioFogEl.style.opacity='1';
+  }
+  radioRAF=requestAnimationFrame(drawRadioFog);
+}
+function stopRadioFog(){
+  if(radioRAF){ cancelAnimationFrame(radioRAF); radioRAF=null; }
+  removeOrient();
+  if(radioFogEl) radioFogEl.style.opacity='0';
+}
+
 function reachTarget(){
   running=false;
   clearTimeout(geigerTimer); clearTimeout(weakTimer);
+  stopRadioFog();
   goAlarm('radio');
 }
 
 function cleanup(){
   running=false;
   clearTimeout(geigerTimer); clearTimeout(weakTimer);
+  stopRadioFog();
   stopSiren();
   if(watchId!=null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
   releaseWake();
@@ -623,10 +665,10 @@ function onOrient(e){
   if(h==null || isNaN(h)) return;
   if(abs) hasAbsolute=true;
   else if(hasAbsolute) return;     // si tenim brúixola absoluta, ignora la relativa
-  radarHeading=((h%360)+360)%360;
+  deviceHeading=((h%360)+360)%360;
 }
 function addOrient(){
-  hasAbsolute=false; radarHeading=0;
+  hasAbsolute=false; deviceHeading=0;
   window.addEventListener('deviceorientationabsolute',onOrient,true);
   window.addEventListener('deviceorientation',onOrient,true);
 }
@@ -661,7 +703,7 @@ function drawRadar(now){
   sweep=(sweep + (TAU/3)*dt) % TAU;            // una volta cada ~3 s
 
   // brúixola: suavitza el rumb i gira el dial perquè la 'N' marqui el nord real
-  radarHeadingSmooth=lerpAngle(radarHeadingSmooth, radarHeading, 0.18);
+  radarHeadingSmooth=lerpAngle(radarHeadingSmooth, deviceHeading, 0.18);
   if(radarCompassDial) radarCompassDial.style.transform='rotate('+(-radarHeadingSmooth).toFixed(1)+'deg)';
 
   // fons
@@ -690,7 +732,9 @@ function drawRadar(now){
   // blip de la mina
   if(radarPos && radarTarget){
     const bearing=bearingTo(radarPos[0],radarPos[1],radarTarget[0],radarTarget[1]);
-    const rel=toRad(((bearing%360)+360)%360);                  // nord-up: la mina queda fixa al mapa
+    // heading-up: la mina és el punt fix del terreny; el radar gira amb tu.
+    // El blip va a dalt (rel=0) quan mires cap a la mina i es reubica si gires/et desvies.
+    const rel=toRad((((bearing-radarHeadingSmooth)%360)+360)%360);
     const norm=Math.min(radarDist/radarInitialDist,1);          // 1 lluny … 0 a sobre
     const rr=norm*maxR;
     const bx=cx+rr*Math.sin(rel), by=cy-rr*Math.cos(rel);
