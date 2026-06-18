@@ -7,7 +7,7 @@
 <title>Font Radioactiva</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  :root{--groc:#f7d000;--negre:#000;--text:#e8e8e8;--vermell:#e23a2e;--verd:#3ad06a;--panell:#141414;--vora:#2a2a2a;}
+  :root{--groc:#f7d000;--negre:#000;--text:#e8e8e8;--vermell:#e23a2e;--verd:#3ad06a;--cian:#22d3ee;--panell:#141414;--vora:#2a2a2a;}
   html,body{height:100%;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
@@ -22,14 +22,17 @@
   #home{justify-content:center;}
   .menu-btn{margin-bottom:16px;}
   .menu-btn.radar{background:var(--verd);}
+  .menu-btn.lidar{background:var(--cian);color:#022;}
   .home-sub{color:#888;font-size:.85rem;margin-bottom:24px;letter-spacing:1px;text-transform:uppercase;}
 
   /* ---------- INTRO ---------- */
-  #intro,#radarIntro{justify-content:flex-start;padding-top:max(40px,env(safe-area-inset-top));}
+  #intro,#radarIntro,#lidarIntro{justify-content:flex-start;padding-top:max(40px,env(safe-area-inset-top));}
   .trefoil{width:84px;height:84px;margin:6px 0 16px;filter:drop-shadow(0 0 18px rgba(247,208,0,.35));}
   .radar-icon{filter:drop-shadow(0 0 18px rgba(58,208,106,.4));}
+  .lidar-icon{filter:drop-shadow(0 0 18px rgba(34,211,224,.45));}
   h1{color:var(--groc);font-size:1.55rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
   h1.radar{color:var(--verd);}
+  h1.lidar{color:var(--cian);}
   p.lead{max-width:360px;line-height:1.6;font-size:.95rem;color:#bbb;margin-bottom:22px;}
   p.lead b{color:var(--text);}
   .opts{background:var(--panell);border:1px solid var(--vora);border-radius:14px;padding:18px;margin-bottom:22px;width:100%;max-width:360px;}
@@ -38,11 +41,14 @@
   .opts .control{display:flex;align-items:center;gap:10px;}
   .opts input[type=range]{width:120px;accent-color:var(--groc);}
   #radarIntro .opts input[type=range]{accent-color:var(--verd);}
+  #lidarIntro .opts input[type=range]{accent-color:var(--cian);}
   .opts .v{color:var(--groc);font-family:ui-monospace,monospace;min-width:54px;text-align:right;}
   #radarIntro .opts .v{color:var(--verd);}
+  #lidarIntro .opts .v{color:var(--cian);}
   .check{display:flex;align-items:center;gap:9px;justify-content:flex-start;font-size:.85rem;color:#aaa;margin-top:14px;}
   .check input{width:18px;height:18px;accent-color:var(--groc);flex-shrink:0;}
   #radarIntro .check input{accent-color:var(--verd);}
+  #lidarIntro .check input{accent-color:var(--cian);}
   button{
     background:var(--groc);color:#000;border:none;border-radius:12px;padding:16px 28px;
     font-size:1.05rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;
@@ -50,6 +56,7 @@
   }
   button:active{transform:scale(.97);}
   #radarStartBtn{background:var(--verd);}
+  #lidarStartBtn{background:var(--cian);color:#022;}
   .err{color:var(--vermell);font-size:.85rem;margin-top:16px;max-width:340px;line-height:1.5;min-height:1em;}
 
   /* ---------- JOC (negre) ---------- */
@@ -75,6 +82,29 @@
   #radarCompass .cref{fill:#e8e8e8;}
   #radarCompass .cN{fill:#fff;font:700 13px sans-serif;text-anchor:middle;}
   #radarCompass .cdir{fill:#9fe3b6;font:600 9px sans-serif;text-anchor:middle;}
+
+  /* ---------- LIDAR ---------- */
+  #lidarPlay{background:#000;justify-content:center;align-items:center;overflow:hidden;}
+  /* flaix del polsador làser: la pantalla s'il·lumina un instant */
+  #lidarFlashOv{position:absolute;inset:0;pointer-events:none;opacity:0;
+    background:radial-gradient(circle at 50% 54%,rgba(34,211,224,.30),rgba(34,211,224,0) 62%);}
+  #lidarFlashOv.on{animation:lflash .55s ease-out;}
+  @keyframes lflash{0%{opacity:0;}10%{opacity:1;}100%{opacity:0;}}
+  /* petjades: pengen d'un punt central i el contenidor gira cap a l'objectiu */
+  #lidarSteps{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(0deg);
+    transform-origin:0 0;will-change:transform;--fs:1;--fo:.85;}
+  #lidarSteps .foot{position:absolute;width:34px;height:52px;margin-left:-17px;opacity:0;
+    filter:drop-shadow(0 0 8px rgba(34,211,224,.55));}
+  #lidarSteps .foot.r{top:-78px;left:11px;}
+  #lidarSteps .foot.l{top:-116px;left:-11px;}
+  #lidarSteps .foot ellipse,#lidarSteps .foot circle{fill:var(--cian);}
+  #lidarSteps.show .foot{animation:fstep 1s ease-out;}
+  @keyframes fstep{0%{opacity:0;transform:scale(calc(var(--fs)*.65));}
+    14%{opacity:var(--fo);transform:scale(var(--fs));}
+    70%{opacity:var(--fo);transform:scale(var(--fs));}
+    100%{opacity:0;transform:scale(var(--fs));}}
+  #lidarHint{position:absolute;bottom:max(26px,env(safe-area-inset-bottom));left:0;right:0;
+    color:#155;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;}
 
   /* ---------- ALARMA ---------- */
   #alarm{background:#1a0000;}
@@ -107,6 +137,7 @@
     padding:3px 8px;border-radius:999px;}
   .badge-radio{color:#000;background:var(--groc);}
   .badge-radar{color:#000;background:var(--verd);}
+  .badge-lidar{color:#022;background:var(--cian);}
   .hist-row{display:flex;justify-content:space-between;font-size:.9rem;color:#bbb;
     font-family:ui-monospace,monospace;margin-bottom:4px;}
   .hist-row:last-child{margin-bottom:0;}
@@ -126,14 +157,15 @@
     <g fill="#000">
       <circle cx="50" cy="50" r="9"/>
       <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z"/>
-      <path d="M50 50 L88.5 72 A45 45 0 0 0 88.5 28 Z" transform="rotate(120 50 50)"/>
-      <path d="M50 50 L88.5 72 A45 45 0 0 0 88.5 28 Z" transform="rotate(240 50 50)"/>
+      <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z" transform="rotate(120 50 50)"/>
+      <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z" transform="rotate(240 50 50)"/>
     </g>
   </svg>
   <h1>Tria un joc</h1>
   <p class="home-sub">Localització a cegues</p>
   <button class="menu-btn radio" id="goRadio">Radioactivity</button>
   <button class="menu-btn radar" id="goRadar">Radar</button>
+  <button class="menu-btn lidar" id="goLidar">Lidar</button>
   <button class="linkbtn" id="homeHistBtn">Veure historial</button>
 </div>
 
@@ -144,8 +176,8 @@
     <g fill="#000">
       <circle cx="50" cy="50" r="9"/>
       <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z"/>
-      <path d="M50 50 L88.5 72 A45 45 0 0 0 88.5 28 Z" transform="rotate(120 50 50)"/>
-      <path d="M50 50 L88.5 72 A45 45 0 0 0 88.5 28 Z" transform="rotate(240 50 50)"/>
+      <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z" transform="rotate(120 50 50)"/>
+      <path d="M50 50 L72.5 11 A45 45 0 0 0 27.5 11 Z" transform="rotate(240 50 50)"/>
     </g>
   </svg>
   <h1>Font Radioactiva</h1>
@@ -219,6 +251,47 @@
     </svg>
   </div>
   <canvas id="radarCanvas"></canvas>
+</div>
+
+<!-- PANTALLA 1c: INTRO LIDAR -->
+<div class="screen" id="lidarIntro">
+  <svg class="trefoil lidar-icon" viewBox="0 0 100 100">
+    <g fill="none" stroke="#22d3ee" stroke-width="3" stroke-linecap="round">
+      <path d="M50 50 L50 8" opacity="1"/>
+      <path d="M30 18 A40 40 0 0 1 70 18" opacity=".75"/>
+      <path d="M22 30 A56 56 0 0 1 78 30" opacity=".5"/>
+      <path d="M14 42 A72 72 0 0 1 86 42" opacity=".3"/>
+    </g>
+    <circle cx="50" cy="50" r="6" fill="#22d3ee"/>
+    <circle cx="50" cy="8" r="5" fill="#22d3ee"/>
+  </svg>
+  <h1 class="lidar">Lidar</h1>
+  <p class="lead">El <b>lidar</b> dispara <b>polsos de llum</b> (un <b>flaix</b>) i, amb el rebot, dibuixa el que té al davant. És l'eina ideal per caçar un <b>dron espia</b> furtiu que vola en silenci a prop teu. Cada flaix il·lumina el camí amb <b>petjades</b> que apunten cap on és el dron <b>respecte d'on mires</b>: segueix-les fins a sobre i <b>desactiva'l</b>. Tria cada quants segons vols el flaix.</p>
+
+  <div class="opts">
+    <label class="row">Distància inicial
+      <span class="control"><input type="range" id="lidarDist" min="100" max="1000" step="50" value="500"><span class="v" id="lidarDistV">500 m</span></span>
+    </label>
+    <label class="row">Flaix cada
+      <span class="control"><input type="range" id="lidarFlash" min="1" max="10" step="1" value="3"><span class="v" id="lidarFlashV">3 s</span></span>
+    </label>
+    <label class="check"><input type="checkbox" id="lidarVib" checked> Vibració de proximitat</label>
+  </div>
+
+  <button id="lidarStartBtn">Activa el lidar</button>
+  <button class="linkbtn" id="lidarBack">← Tria un joc</button>
+  <div class="err" id="lidarErr"></div>
+</div>
+
+<!-- PANTALLA 2c: LIDAR -->
+<div class="screen" id="lidarPlay">
+  <button class="exit-btn" id="lidarExitBtn">← Surt</button>
+  <div id="lidarFlashOv"></div>
+  <div id="lidarSteps">
+    <svg class="foot l" id="lidarStepFL" viewBox="0 0 34 52"><ellipse cx="17" cy="33" rx="12" ry="18"/><circle cx="17" cy="9" r="6"/></svg>
+    <svg class="foot r" id="lidarStepFR" viewBox="0 0 34 52"><ellipse cx="17" cy="33" rx="12" ry="18"/><circle cx="17" cy="9" r="6"/></svg>
+  </div>
+  <div id="lidarHint">Espera el flaix…</div>
 </div>
 
 <!-- PANTALLA 3: ALARMA (compartida) -->
@@ -326,6 +399,63 @@ function startSubAlarm(){
 }
 function stopSubAlarm(){ if(subAlarm){ clearInterval(subAlarm.timer); try{subAlarm.osc.stop();}catch(e){} subAlarm=null; } }
 
+/* Pols de lidar: xiulet electrònic curt i ascendent (el "flaix" làser). */
+function lidarPulse(intensity=0.5){
+  const a=ac(), t=a.currentTime;
+  const osc=a.createOscillator(); osc.type='triangle';
+  osc.frequency.setValueAtTime(1400,t);
+  osc.frequency.exponentialRampToValueAtTime(2600,t+0.05);
+  const g=a.createGain();
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(0.34*intensity,t+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
+  osc.connect(g); g.connect(a.destination);
+  osc.start(t); osc.stop(t+0.22);
+}
+
+/* Alarma del dron: bip ràpid de dos tons aguts. */
+let lidarAlarm=null;
+function startLidarAlarm(){
+  const a=ac();
+  const osc=a.createOscillator(); osc.type='square';
+  const g=a.createGain(); g.gain.value=0.0001;
+  osc.frequency.value=880;
+  osc.connect(g); g.connect(a.destination); osc.start();
+  let on=true;
+  const tick=()=>{
+    if(!lidarAlarm) return;
+    const t=a.currentTime;
+    osc.frequency.setValueAtTime(on?880:1320,t);
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.exponentialRampToValueAtTime(0.2,t+0.02);
+    g.gain.setValueAtTime(0.2,t+0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+    on=!on;
+  };
+  lidarAlarm={osc,g,timer:setInterval(tick,240)};
+  tick();
+}
+function stopLidarAlarm(){ if(lidarAlarm){ clearInterval(lidarAlarm.timer); try{lidarAlarm.osc.stop();}catch(e){} lidarAlarm=null; } }
+
+/* Ajusta un punt al carrer/plaça caminable més proper (OSRM, perfil a peu) per
+   garantir que el marcador és accessible. Si falla la xarxa, manté el punt original. */
+async function snapToStreet(lat,lon){
+  try{
+    const ctl=new AbortController(); const to=setTimeout(()=>ctl.abort(),9000);
+    const res=await fetch('https://router.project-osrm.org/nearest/v1/foot/'+lon+','+lat+'?number=1',{signal:ctl.signal});
+    clearTimeout(to);
+    if(!res.ok) throw 0;
+    const data=await res.json();
+    const wp=data&&data.code==='Ok'&&data.waypoints&&data.waypoints[0];
+    if(wp&&wp.location){
+      const snapped=[wp.location[1],wp.location[0]];   // OSRM torna [lon,lat]
+      if(haversine(lat,lon,snapped[0],snapped[1])<=150) return snapped;
+    }
+  }catch(_){}
+  return [lat,lon];
+}
+
 /* ---------- Geometria ---------- */
 const R=6371000;
 const toRad=d=>d*Math.PI/180;
@@ -353,26 +483,33 @@ function bearingTo(lat1,lon1,lat2,lon2){
 let target=null, initialDist=500, goalRadius=10, vibOn=true;
 let watchId=null, geigerTimer=null, running=false, startTime=0, wakeLock=null;
 let lastDist=500;
-let walkedDist=0, lastPos=null;   // distància realment caminada (acumulada via GPS)
+let walkedDist=0, lastPos=null;   // lastPos: última posició GPS (per la boira direccional)
+let lastTargetDist=null;          // distància caminada = suma d'apropaments i allunyaments respecte la font
 const minRate=0.6, maxRate=28; // clics/s lluny → a prop
 
 /* ---------- Estat del joc (radar) ---------- */
 const RADAR_GOAL=5;               // distància (m) a la qual la mina es pot desactivar
 let radarTarget=null, radarInitialDist=500, radarVibOn=true;
 let radarWatchId=null, radarRunning=false, radarStart=0;
-let radarDist=500, radarPos=null, radarLastPos=null, radarWalked=0;
+let radarDist=500, radarPos=null, radarLastTargetDist=null, radarWalked=0;
 let radarHeadingSmooth=0, hasAbsolute=false, radarRAF=null, lastFrame=0, sweep=0;
 let radarCtx=null, radarSize=0, radarCompassDial=null;
 
-/* Rumb del dispositiu (brúixola), compartit pels dos jocs. */
+/* Rumb del dispositiu (brúixola), compartit pels tres jocs. */
 let deviceHeading=0;
 /* Estat de la boira de radiació (radioactivity). */
 let radioHeadingSmooth=0, radioRAF=null, radioFogEl=null;
 
+/* ---------- Estat del joc (lidar) ---------- */
+const LIDAR_GOAL=5;               // distància (m) a la qual el dron es pot desactivar
+let lidarTarget=null, lidarInitialDist=500, lidarVibOn=true, lidarFlashEvery=3;
+let lidarWatchId=null, lidarRunning=false, lidarStart=0, lidarFlashTimer=null;
+let lidarDist=500, lidarPos=null, lidarLastTargetDist=null, lidarWalked=0;
+
 /* Interpola angles pel camí més curt (evita el salt 359°→0°). */
 function lerpAngle(a,b,t){ const d=((b-a+540)%360)-180; return a+d*t; }
 
-let gameMode='radio';             // 'radio' | 'radar' — control de l'alarma/final compartits
+let gameMode='radio';             // 'radio' | 'radar' | 'lidar' — control de l'alarma/final compartits
 
 /* ---------- Color de proximitat ----------
    Com més a prop de la font, el punt central passa de groc → taronja → vermell.
@@ -405,12 +542,16 @@ function loadOpts(){
     if(typeof o.vib==='boolean')$('vib').checked=o.vib;
     if(o.radarDist)$('radarDist').value=o.radarDist;
     if(typeof o.radarVib==='boolean')$('radarVib').checked=o.radarVib;
+    if(o.lidarDist)$('lidarDist').value=o.lidarDist;
+    if(o.lidarFlash)$('lidarFlash').value=o.lidarFlash;
+    if(typeof o.lidarVib==='boolean')$('lidarVib').checked=o.lidarVib;
   }catch(_){}
 }
 function saveOpts(){
   try{localStorage.setItem(PREF,JSON.stringify({
     dist:$('dist').value,goal:$('goal').value,vib:$('vib').checked,
-    radarDist:$('radarDist').value,radarVib:$('radarVib').checked
+    radarDist:$('radarDist').value,radarVib:$('radarVib').checked,
+    lidarDist:$('lidarDist').value,lidarFlash:$('lidarFlash').value,lidarVib:$('lidarVib').checked
   }));}catch(_){}
 }
 
@@ -430,9 +571,8 @@ function renderHist(){
   const h=loadHist(), box=$('histList');
   if(!h.length){ box.innerHTML='<p class="hist-empty">Encara no has completat cap partida.</p>'; return; }
   box.innerHTML=h.map(e=>{
-    const radar=e.mode==='radar';
-    const label=radar?'Radar':'Radioactivity';
-    const cls=radar?'badge-radar':'badge-radio';
+    const label=e.mode==='radar'?'Radar':e.mode==='lidar'?'Lidar':'Radioactivity';
+    const cls=e.mode==='radar'?'badge-radar':e.mode==='lidar'?'badge-lidar':'badge-radio';
     return '<div class="hist-item">'+
       '<div class="hist-top"><span class="hist-date">'+fmtDate(e.date)+'</span>'+
         '<span class="hist-badge '+cls+'">'+label+'</span></div>'+
@@ -453,23 +593,29 @@ $('histClear').onclick=()=>{
 /* ---- Navegació del menú ---- */
 $('goRadio').onclick=()=>{ $('introErr').textContent=''; show('intro'); };
 $('goRadar').onclick=()=>{ $('radarErr').textContent=''; show('radarIntro'); };
+$('goLidar').onclick=()=>{ $('lidarErr').textContent=''; show('lidarIntro'); };
 $('introBack').onclick=()=>show('home');
 $('radarBack').onclick=()=>show('home');
+$('lidarBack').onclick=()=>show('home');
 
 $('dist').oninput=()=>$('distV').textContent=$('dist').value+' m';
 $('goal').oninput=()=>$('goalV').textContent=$('goal').value+' m';
 $('radarDist').oninput=()=>$('radarDistV').textContent=$('radarDist').value+' m';
+$('lidarDist').oninput=()=>$('lidarDistV').textContent=$('lidarDist').value+' m';
+$('lidarFlash').oninput=()=>$('lidarFlashV').textContent=$('lidarFlash').value+' s';
 loadOpts();
 $('distV').textContent=$('dist').value+' m';
 $('goalV').textContent=$('goal').value+' m';
 $('radarDistV').textContent=$('radarDist').value+' m';
+$('lidarDistV').textContent=$('lidarDist').value+' m';
+$('lidarFlashV').textContent=$('lidarFlash').value+' s';
 
 /* ---- Manté la pantalla encesa durant la cerca ---- */
 async function requestWake(){
   try{ if('wakeLock' in navigator){ wakeLock=await navigator.wakeLock.request('screen'); } }catch(_){}
 }
 function releaseWake(){ try{ wakeLock&&wakeLock.release(); }catch(_){} wakeLock=null; }
-document.addEventListener('visibilitychange',()=>{ if((running||radarRunning)&&document.visibilityState==='visible'&&!wakeLock) requestWake(); });
+document.addEventListener('visibilitychange',()=>{ if((running||radarRunning||lidarRunning)&&document.visibilityState==='visible'&&!wakeLock) requestWake(); });
 
 /* ====================================================================
    ALARMA + FINAL (compartits entre Radioactivity i Radar)
@@ -480,6 +626,10 @@ function goAlarm(mode){
     $('alarmTitle').textContent='⚠ Mina detectada ⚠';
     $('alarmSub').textContent='Ets sobre la mina. Desactiva-la!';
     startSubAlarm();
+  }else if(mode==='lidar'){
+    $('alarmTitle').textContent='⚠ Dron localitzat ⚠';
+    $('alarmSub').textContent='Ets sobre el dron. Desactiva\'l!';
+    startLidarAlarm();
   }else{
     $('alarmTitle').textContent='⚠ Alarma nuclear ⚠';
     $('alarmSub').textContent='Has trobat la font. Desactiva-la!';
@@ -490,7 +640,7 @@ function goAlarm(mode){
 }
 
 $('defuse').onclick=()=>{
-  stopSiren(); stopSubAlarm();
+  stopSiren(); stopSubAlarm(); stopLidarAlarm();
   $('alarm').classList.remove('flash');
   if(navigator.vibrate) navigator.vibrate(60);
   let secs, marker, walked;
@@ -499,6 +649,11 @@ $('defuse').onclick=()=>{
     cancelAnimationFrame(radarRAF); removeOrient(); releaseWake();
     secs=Math.round((Date.now()-radarStart)/1000); marker=radarInitialDist; walked=radarWalked;
     $('winTitle').textContent='✓ Mina desactivada';
+  }else if(gameMode==='lidar'){
+    if(lidarWatchId!=null){ navigator.geolocation.clearWatch(lidarWatchId); lidarWatchId=null; }
+    clearInterval(lidarFlashTimer); removeOrient(); releaseWake();
+    secs=Math.round((Date.now()-lidarStart)/1000); marker=lidarInitialDist; walked=lidarWalked;
+    $('winTitle').textContent='✓ Dron desactivat';
   }else{
     if(watchId!=null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
     releaseWake();
@@ -513,8 +668,8 @@ $('defuse').onclick=()=>{
 };
 
 $('again').onclick=()=>{
-  cleanup(); radarCleanup();
-  $('introErr').textContent=''; $('radarErr').textContent='';
+  cleanup(); radarCleanup(); lidarCleanup();
+  $('introErr').textContent=''; $('radarErr').textContent=''; $('lidarErr').textContent='';
   show('home');
 };
 
@@ -532,10 +687,16 @@ $('startBtn').onclick=()=>{
   if(!('geolocation' in navigator)){ $('introErr').textContent='Aquest dispositiu no permet geolocalització.'; return; }
   $('introErr').textContent='Obtenint la teva posició…';
 
-  navigator.geolocation.getCurrentPosition(pos=>{
+  navigator.geolocation.getCurrentPosition(async pos=>{
     const {latitude,longitude}=pos.coords;
     const bearing=Math.random()*360;
-    target=destPoint(latitude,longitude,bearing,initialDist);
+    let t=destPoint(latitude,longitude,bearing,initialDist);
+    // Ajusta el marcador a un carrer o plaça proper perquè sigui accessible.
+    $('introErr').textContent='Buscant un carrer accessible…';
+    t=await snapToStreet(t[0],t[1]);
+    target=t;
+    initialDist=Math.round(haversine(latitude,longitude,target[0],target[1]));  // distància real al punt ajustat
+    lastDist=initialDist; lastTargetDist=initialDist;
     walkedDist=0; lastPos=[latitude,longitude];
     startTime=Date.now();
     running=true;
@@ -558,14 +719,16 @@ function currentRate(dist){
 
 function onMove(pos){
   if(!running) return;
-  const {latitude,longitude,accuracy}=pos.coords;
-  // Acumula la distància realment caminada; filtra el soroll del GPS i els salts impossibles.
-  if(lastPos){
-    const step=haversine(lastPos[0],lastPos[1],latitude,longitude);
-    if(step>=1 && step<200) walkedDist+=step;
-  }
-  lastPos=[latitude,longitude];
+  const {latitude,longitude}=pos.coords;
   const dist=haversine(latitude,longitude,target[0],target[1]);
+  // Distància caminada = quant t'has apropat i allunyat de la font (suma de canvis
+  // de la distància al marcador). Filtra el soroll del GPS i els salts impossibles.
+  if(lastTargetDist!=null){
+    const delta=Math.abs(lastTargetDist-dist);
+    if(delta>=1 && delta<200) walkedDist+=delta;
+  }
+  lastTargetDist=dist;
+  lastPos=[latitude,longitude];   // posició per a la boira direccional
   lastDist=dist;
   if(dist<=goalRadius) reachTarget();
 }
@@ -773,7 +936,7 @@ $('radarStartBtn').onclick=()=>{
     const {latitude,longitude}=pos.coords;
     const bearing=Math.random()*360;
     radarTarget=destPoint(latitude,longitude,bearing,radarInitialDist);   // punt aleatori a la distància demanada
-    radarWalked=0; radarLastPos=[latitude,longitude]; radarPos=[latitude,longitude];
+    radarWalked=0; radarLastTargetDist=radarInitialDist; radarPos=[latitude,longitude];
     radarStart=Date.now(); radarRunning=true; lastFrame=0; sweep=0; radarHeadingSmooth=0;
     $('radarErr').textContent='';
     show('radarPlay');
@@ -788,12 +951,14 @@ $('radarStartBtn').onclick=()=>{
 function onRadarMove(pos){
   if(!radarRunning) return;
   const {latitude,longitude}=pos.coords;
-  if(radarLastPos){
-    const step=haversine(radarLastPos[0],radarLastPos[1],latitude,longitude);
-    if(step>=1 && step<200) radarWalked+=step;
-  }
-  radarLastPos=[latitude,longitude]; radarPos=[latitude,longitude];
+  radarPos=[latitude,longitude];
   radarDist=haversine(latitude,longitude,radarTarget[0],radarTarget[1]);
+  // Distància caminada relativa a la mina (suma d'apropaments i allunyaments).
+  if(radarLastTargetDist!=null){
+    const delta=Math.abs(radarLastTargetDist-radarDist);
+    if(delta>=1 && delta<200) radarWalked+=delta;
+  }
+  radarLastTargetDist=radarDist;
   if(radarDist<=RADAR_GOAL) radarReach();
 }
 
@@ -815,6 +980,117 @@ function radarCleanup(){
 
 $('radarExitBtn').onclick=()=>{
   radarCleanup();
+  show('home');
+};
+
+/* ====================================================================
+   JOC LIDAR
+   El lidar emet un flaix cada N segons. A cada flaix la pantalla
+   s'il·lumina i apareixen petjades que apunten cap al dron, relatives a
+   cap on mires (brúixola del dispositiu). Dues petjades = encara queda
+   camí; una petjada = ja ets molt a prop.
+   ==================================================================== */
+$('lidarStartBtn').onclick=()=>{
+  ac();
+  lidarInitialDist=+$('lidarDist').value;
+  lidarFlashEvery=+$('lidarFlash').value;
+  lidarVibOn=$('lidarVib').checked;
+  lidarDist=lidarInitialDist;
+  saveOpts();
+  $('lidarErr').textContent='';
+
+  if(!('geolocation' in navigator)){ $('lidarErr').textContent='Aquest dispositiu no permet geolocalització.'; return; }
+  $('lidarErr').textContent='Obtenint la teva posició…';
+
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const {latitude,longitude}=pos.coords;
+    const bearing=Math.random()*360;
+    let t=destPoint(latitude,longitude,bearing,lidarInitialDist);
+    // Ajusta el dron a un carrer o plaça proper perquè sigui accessible.
+    $('lidarErr').textContent='Buscant un carrer accessible…';
+    t=await snapToStreet(t[0],t[1]);
+    lidarTarget=t;
+    lidarInitialDist=Math.round(haversine(latitude,longitude,lidarTarget[0],lidarTarget[1]));
+    lidarDist=lidarInitialDist; lidarLastTargetDist=lidarInitialDist;
+    lidarPos=[latitude,longitude]; lidarWalked=0;
+    lidarStart=Date.now(); lidarRunning=true;
+    $('lidarErr').textContent='';
+    show('lidarPlay');
+    requestWake(); addOrient();
+    lidarWatchId=navigator.geolocation.watchPosition(onLidarMove,()=>{},{enableHighAccuracy:true,maximumAge:0,timeout:20000});
+    clearInterval(lidarFlashTimer);
+    lidarFlashTimer=setInterval(lidarFlash,lidarFlashEvery*1000);
+    lidarFlash();                       // primer flaix immediat
+  }, err=>{
+    $('lidarErr').textContent='No s\'ha pogut accedir a la ubicació ('+err.message+'). Cal donar permís de localització.';
+  }, {enableHighAccuracy:true,timeout:20000});
+};
+
+function onLidarMove(pos){
+  if(!lidarRunning) return;
+  const {latitude,longitude}=pos.coords;
+  lidarPos=[latitude,longitude];
+  lidarDist=haversine(latitude,longitude,lidarTarget[0],lidarTarget[1]);
+  // Distància caminada relativa al dron (suma d'apropaments i allunyaments).
+  if(lidarLastTargetDist!=null){
+    const delta=Math.abs(lidarLastTargetDist-lidarDist);
+    if(delta>=1 && delta<200) lidarWalked+=delta;
+  }
+  lidarLastTargetDist=lidarDist;
+  if(lidarDist<=LIDAR_GOAL) lidarReach();
+}
+
+/* Un flaix: so de pols, il·lumina la pantalla i mostra les petjades cap al dron. */
+function lidarFlash(){
+  if(!lidarRunning) return;
+  const norm=Math.min(lidarDist/lidarInitialDist,1);   // 1 lluny … 0 a sobre
+  const prox=1-norm;
+  lidarPulse(0.3+0.6*prox);
+
+  // Direcció cap al dron relativa a cap on mires (0 = recte endavant).
+  let rel=0;
+  if(lidarPos&&lidarTarget){
+    const bearing=bearingTo(lidarPos[0],lidarPos[1],lidarTarget[0],lidarTarget[1]);
+    rel=((bearing-deviceHeading)%360+360)%360;
+  }
+  const steps=$('lidarSteps');
+  steps.style.transform='rotate('+rel.toFixed(1)+'deg)';
+
+  // Una o dues petjades segons la proximitat: més a prop, menys camí.
+  $('lidarStepFR').style.display='block';
+  $('lidarStepFL').style.display=(lidarDist<20)?'none':'block';
+
+  // Brillantor i mida creixen a mesura que t'apropes.
+  steps.style.setProperty('--fs',(0.8+0.6*prox).toFixed(2));
+  steps.style.setProperty('--fo',(0.5+0.45*prox).toFixed(2));
+
+  // Dispara les animacions de flaix i petjades.
+  const ov=$('lidarFlashOv');
+  ov.classList.remove('on'); void ov.offsetWidth; ov.classList.add('on');
+  steps.classList.remove('show'); void steps.offsetWidth; steps.classList.add('show');
+
+  $('lidarHint').textContent=(lidarDist<20)?'Molt a prop…':'Segueix les petjades';
+  if(lidarVibOn&&navigator.vibrate) navigator.vibrate(Math.round(8+prox*32));
+}
+
+function lidarReach(){
+  lidarRunning=false;
+  clearInterval(lidarFlashTimer);
+  removeOrient();
+  goAlarm('lidar');
+}
+
+function lidarCleanup(){
+  lidarRunning=false;
+  clearInterval(lidarFlashTimer);
+  stopLidarAlarm();
+  removeOrient();
+  if(lidarWatchId!=null){ navigator.geolocation.clearWatch(lidarWatchId); lidarWatchId=null; }
+  releaseWake();
+}
+
+$('lidarExitBtn').onclick=()=>{
+  lidarCleanup();
   show('home');
 };
 </script>
