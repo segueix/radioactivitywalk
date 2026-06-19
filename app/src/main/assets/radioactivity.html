@@ -90,20 +90,31 @@
     background:radial-gradient(circle at 50% 54%,rgba(34,211,224,.30),rgba(34,211,224,0) 62%);}
   #lidarFlashOv.on{animation:lflash .55s ease-out;}
   @keyframes lflash{0%{opacity:0;}10%{opacity:1;}100%{opacity:0;}}
-  /* petjades: pengen d'un punt central i el contenidor gira cap a l'objectiu */
+  /* línia d'escombrat del lidar: recorre la pantalla a cada flaix */
+  #lidarScan{position:absolute;left:0;right:0;top:0;height:3px;opacity:0;pointer-events:none;
+    background:linear-gradient(90deg,rgba(34,211,224,0),rgba(120,245,255,.95),rgba(34,211,224,0));
+    box-shadow:0 0 18px 5px rgba(34,211,224,.7);}
+  #lidarScan.on{animation:lscan .62s ease-in-out;}
+  @keyframes lscan{0%{opacity:0;top:-2%;}12%{opacity:1;}88%{opacity:1;}100%{opacity:0;top:100%;}}
+  /* anell d'eco expansiu des del centre */
+  #lidarRing{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;
+    border:2px solid rgba(34,211,224,.85);border-radius:50%;opacity:0;pointer-events:none;
+    box-shadow:0 0 14px rgba(34,211,224,.5);}
+  #lidarRing.on{animation:lring .7s ease-out;}
+  @keyframes lring{0%{opacity:0;transform:scale(.25);}15%{opacity:.85;}100%{opacity:0;transform:scale(7);}}
+  /* petjades de bota: pengen d'un punt central i el contenidor gira cap a l'objectiu */
   #lidarSteps{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(0deg);
     transform-origin:0 0;will-change:transform;--fs:1;--fo:.85;}
-  #lidarSteps .foot{position:absolute;width:104px;height:166px;margin-left:-52px;opacity:0;
-    filter:drop-shadow(0 0 12px rgba(34,211,224,.6));}
-  #lidarSteps .foot.r{top:-150px;left:22px;}
-  #lidarSteps .foot.l{top:-238px;left:-30px;}
-  #lidarSteps .foot .sole{fill:rgba(34,211,224,.16);stroke:var(--cian);stroke-width:2.4;
-    stroke-linejoin:round;}
-  #lidarSteps .foot .tread{fill:none;stroke:var(--cian);stroke-width:2.2;stroke-linecap:round;opacity:.9;}
-  #lidarSteps.show .foot{animation:fstep 1s ease-out;}
-  @keyframes fstep{0%{opacity:0;transform:scale(calc(var(--fs)*.65));}
-    14%{opacity:var(--fo);transform:scale(var(--fs));}
-    70%{opacity:var(--fo);transform:scale(var(--fs));}
+  #lidarSteps .foot{position:absolute;width:104px;height:180px;margin-left:-52px;opacity:0;top:0;
+    transition:top .45s cubic-bezier(.4,1.3,.5,1);
+    filter:drop-shadow(0 0 16px rgba(34,211,224,.85));}
+  #lidarSteps .foot.l{left:-40px;}
+  #lidarSteps .foot.r{left:40px;}
+  #lidarSteps .foot .lug{fill:var(--cian);}
+  #lidarSteps.show .foot{animation:fstep 1.05s ease-out;}
+  @keyframes fstep{0%{opacity:0;transform:scale(calc(var(--fs)*.45));}
+    32%{opacity:var(--fo);transform:scale(var(--fs));}
+    72%{opacity:var(--fo);transform:scale(var(--fs));}
     100%{opacity:0;transform:scale(var(--fs));}}
   #lidarHint{position:absolute;bottom:max(26px,env(safe-area-inset-bottom));left:0;right:0;
     color:#155;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;}
@@ -289,19 +300,35 @@
 <div class="screen" id="lidarPlay">
   <button class="exit-btn" id="lidarExitBtn">← Surt</button>
   <div id="lidarFlashOv"></div>
+  <div id="lidarRing"></div>
+  <div id="lidarScan"></div>
   <div id="lidarSteps">
-    <svg class="foot l" id="lidarStepFL" viewBox="0 0 60 96">
-      <path class="sole" d="M30 5 C43 5 51 16 50 30 C49.5 40 45 46 44 54 C43 64 47 72 47 80 C47 91 39 95 30 95 C21 95 13 91 13 80 C13 72 17 64 16 54 C15 46 10.5 40 10 30 C9 16 17 5 30 5 Z"/>
-      <g class="tread">
-        <path d="M18 17 H42"/><path d="M14 25 H46"/><path d="M13 33 H47"/><path d="M15 41 H45"/>
-        <path d="M18 66 H42"/><path d="M15 74 H45"/><path d="M18 82 H42"/>
+    <svg class="foot l" id="lidarStepFL" viewBox="0 0 60 104">
+      <g class="lug">
+        <path d="M30 3 C40 3 47 8 48 15 L12 15 C13 8 20 3 30 3 Z"/>
+        <rect x="9" y="18" width="42" height="6" rx="3"/>
+        <rect x="8" y="26" width="44" height="6" rx="3"/>
+        <rect x="8" y="34" width="44" height="6" rx="3"/>
+        <rect x="10" y="42" width="40" height="5.5" rx="2.75"/>
+        <rect x="13" y="49" width="34" height="5" rx="2.5"/>
+        <rect x="16" y="64" width="28" height="6" rx="3"/>
+        <rect x="14" y="72" width="32" height="6" rx="3"/>
+        <rect x="14" y="80" width="32" height="6" rx="3"/>
+        <path d="M17 88 L43 88 C43 96 37 100 30 100 C23 100 17 96 17 88 Z"/>
       </g>
     </svg>
-    <svg class="foot r" id="lidarStepFR" viewBox="0 0 60 96">
-      <path class="sole" d="M30 5 C43 5 51 16 50 30 C49.5 40 45 46 44 54 C43 64 47 72 47 80 C47 91 39 95 30 95 C21 95 13 91 13 80 C13 72 17 64 16 54 C15 46 10.5 40 10 30 C9 16 17 5 30 5 Z"/>
-      <g class="tread">
-        <path d="M18 17 H42"/><path d="M14 25 H46"/><path d="M13 33 H47"/><path d="M15 41 H45"/>
-        <path d="M18 66 H42"/><path d="M15 74 H45"/><path d="M18 82 H42"/>
+    <svg class="foot r" id="lidarStepFR" viewBox="0 0 60 104">
+      <g class="lug">
+        <path d="M30 3 C40 3 47 8 48 15 L12 15 C13 8 20 3 30 3 Z"/>
+        <rect x="9" y="18" width="42" height="6" rx="3"/>
+        <rect x="8" y="26" width="44" height="6" rx="3"/>
+        <rect x="8" y="34" width="44" height="6" rx="3"/>
+        <rect x="10" y="42" width="40" height="5.5" rx="2.75"/>
+        <rect x="13" y="49" width="34" height="5" rx="2.5"/>
+        <rect x="16" y="64" width="28" height="6" rx="3"/>
+        <rect x="14" y="72" width="32" height="6" rx="3"/>
+        <rect x="14" y="80" width="32" height="6" rx="3"/>
+        <path d="M17 88 L43 88 C43 96 37 100 30 100 C23 100 17 96 17 88 Z"/>
       </g>
     </svg>
   </div>
@@ -518,7 +545,7 @@ let radioHeadingSmooth=0, radioRAF=null, radioFogEl=null;
 const LIDAR_GOAL=5;               // distància (m) a la qual el dron es pot desactivar
 let lidarTarget=null, lidarInitialDist=500, lidarVibOn=true, lidarFlashEvery=3;
 let lidarWatchId=null, lidarRunning=false, lidarStart=0, lidarFlashTimer=null;
-let lidarDist=500, lidarPos=null, lidarLastTargetDist=null, lidarWalked=0;
+let lidarDist=500, lidarPos=null, lidarLastTargetDist=null, lidarWalked=0, lidarStep=0;
 
 /* Interpola angles pel camí més curt (evita el salt 359°→0°). */
 function lerpAngle(a,b,t){ const d=((b-a+540)%360)-180; return a+d*t; }
@@ -1026,7 +1053,7 @@ $('lidarStartBtn').onclick=()=>{
     lidarTarget=t;
     lidarInitialDist=Math.round(haversine(latitude,longitude,lidarTarget[0],lidarTarget[1]));
     lidarDist=lidarInitialDist; lidarLastTargetDist=lidarInitialDist;
-    lidarPos=[latitude,longitude]; lidarWalked=0;
+    lidarPos=[latitude,longitude]; lidarWalked=0; lidarStep=0;
     lidarStart=Date.now(); lidarRunning=true;
     $('lidarErr').textContent='';
     show('lidarPlay');
@@ -1070,17 +1097,20 @@ function lidarFlash(){
   const steps=$('lidarSteps');
   steps.style.transform='rotate('+rel.toFixed(1)+'deg)';
 
-  // Una o dues petjades segons la proximitat: més a prop, menys camí.
-  $('lidarStepFR').style.display='block';
-  $('lidarStepFL').style.display=(lidarDist<20)?'none':'block';
+  // Dos peus separats, un davant de l'altre; alterna qui va davant per simular el pas.
+  const lead=(lidarStep%2===0);
+  $('lidarStepFL').style.top=(lead?-236:-118)+'px';
+  $('lidarStepFR').style.top=(lead?-118:-236)+'px';
+  lidarStep++;
 
   // Brillantor i mida creixen a mesura que t'apropes.
-  steps.style.setProperty('--fs',(0.8+0.6*prox).toFixed(2));
-  steps.style.setProperty('--fo',(0.5+0.45*prox).toFixed(2));
+  steps.style.setProperty('--fs',(0.85+0.5*prox).toFixed(2));
+  steps.style.setProperty('--fo',(0.55+0.4*prox).toFixed(2));
 
-  // Dispara les animacions de flaix i petjades.
-  const ov=$('lidarFlashOv');
-  ov.classList.remove('on'); void ov.offsetWidth; ov.classList.add('on');
+  // Efecte lidar: flaix, línia d'escombrat i anell d'eco; les petjades hi apareixen progressivament.
+  const ov=$('lidarFlashOv'); ov.classList.remove('on'); void ov.offsetWidth; ov.classList.add('on');
+  const sc=$('lidarScan'); sc.classList.remove('on'); void sc.offsetWidth; sc.classList.add('on');
+  const rg=$('lidarRing'); rg.classList.remove('on'); void rg.offsetWidth; rg.classList.add('on');
   steps.classList.remove('show'); void steps.offsetWidth; steps.classList.add('show');
 
   $('lidarHint').textContent=(lidarDist<20)?'Molt a prop…':'Segueix les petjades';
