@@ -108,8 +108,8 @@
   #lidarSteps .foot{position:absolute;width:104px;height:180px;margin-left:-52px;opacity:0;top:0;
     transition:top .45s cubic-bezier(.4,1.3,.5,1);
     filter:drop-shadow(0 0 16px rgba(34,211,224,.85));}
-  #lidarSteps .foot.l{left:-40px;}
-  #lidarSteps .foot.r{left:40px;}
+  #lidarSteps .foot.l{left:-52px;}
+  #lidarSteps .foot.r{left:52px;}
   #lidarSteps .foot .lug{fill:var(--cian);}
   #lidarSteps.show .foot{animation:fstep 1.05s ease-out;}
   @keyframes fstep{0%{opacity:0;transform:scale(calc(var(--fs)*.45));}
@@ -1099,8 +1099,8 @@ function lidarFlash(){
 
   // Dos peus separats, un davant de l'altre; alterna qui va davant per simular el pas.
   const lead=(lidarStep%2===0);
-  $('lidarStepFL').style.top=(lead?-236:-118)+'px';
-  $('lidarStepFR').style.top=(lead?-118:-236)+'px';
+  $('lidarStepFL').style.top=(lead?-252:-96)+'px';
+  $('lidarStepFR').style.top=(lead?-96:-252)+'px';
   lidarStep++;
 
   // Brillantor i mida creixen a mesura que t'apropes.
