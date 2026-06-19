@@ -1,8 +1,8 @@
 Font Radioactiva
 ================
 
-Joc Android amb **dos modes** de localització a cegues. A la pantalla d'inici
-tries entre **Radioactivity** (a dalt) i **Radar** (a baix). Tots dos col·loquen
+Joc Android amb **tres modes** de localització a cegues. A la pantalla d'inici
+tries entre **Radioactivity**, **Radar** i **Lidar**. Tots tres col·loquen
 un objectiu en un punt aleatori a la distància que demanis i et fan caminar-hi
 fins a sobre.
 
@@ -19,6 +19,9 @@ Radioactivity
   salta l'alarma nuclear i l'has de desactivar.
 - **Distància inicial**: a quina distància es col·loca la font (100–1000 m).
 - **Radi d'arribada**: com de prop has d'estar per "trobar-la" (5–30 m).
+- El marcador s'**ajusta al carrer o plaça caminable més proper** (servei
+  `nearest` d'OSRM, perfil a peu) perquè el punt sigui sempre accessible. Si no
+  hi ha xarxa, es manté el punt aleatori original.
 
 Radar
 - El **radar** ha detectat una **mina** amagada que has de **desactivar**. A la
@@ -31,18 +34,37 @@ Radar
   de submarí**.
 - **Distància inicial**: a quina distància es col·loca la mina (100–1000 m).
 
-Comú als dos modes
+Lidar
+- El **lidar** dispara **polsos de llum** (un **flaix**) i, amb el rebot, dibuixa
+  el que té al davant. És l'eina ideal per caçar un **dron espia** furtiu que vola
+  en silenci: és l'objecte que millor lliga amb el lidar, perquè es localitza pel
+  reflex dels polsos i s'ha de **desactivar**. A cada flaix la pantalla
+  s'il·lumina un instant i apareixen **una o dues petjades** que apunten cap on és
+  el dron **segons cap a on mires** (brúixola via `deviceorientation`). **Dues
+  petjades** = encara queda camí; **una petjada** = ja ets molt a prop. En arribar
+  a **5 m** apareix el botó de desactivació.
+- **Distància inicial**: a quina distància es col·loca el dron (100–1000 m).
+- **Flaix cada**: cada quants segons es dispara el pols de llum (1–10 s).
+- Com a Radioactivity, el dron s'**ajusta al carrer o plaça caminable més proper**.
+
+Comú als tres modes
 - **Vibració de proximitat**: el mòbil vibra més fort com més a prop ets.
 - **Historial**: cada partida completada es guarda (data, tipus de joc
-  —Radioactivity o Radar—, distància del marcador, distància realment caminada i
+  —Radioactivity, Radar o Lidar—, distància del marcador, distància caminada i
   temps utilitzat) i es pot consultar des de la pantalla d'inici o la final. Es
   desa localment al dispositiu.
+- **Distància caminada**: es calcula **en relació a l'objectiu**, sumant tot el
+  que t'hi has anat **apropant i allunyant** (canvis de la distància al marcador),
+  per donar una xifra precisa i estable enfront del soroll del GPS.
 
 Tecnologia
 - Geolocalització via HTML5 Geolocation API (`navigator.geolocation`) dins el WebView.
-- So del Geiger i sirena generats amb la Web Audio API.
+- So del Geiger, sirena, sonar i pols de lidar generats amb la Web Audio API.
 - `navigator.wakeLock` manté la pantalla encesa durant la cerca.
-- Sense mapa, sense xarxa: el joc funciona offline (només cal el permís de localització).
+- Per situar el marcador en un carrer o plaça (Radioactivity i Lidar) es consulta
+  el servei públic `nearest` d'OSRM. És l'única crida de xarxa i és **opcional**:
+  si falla, s'utilitza el punt aleatori original i el joc continua funcionant
+  offline (només cal el permís de localització).
 
 Run
 - Obre la carpeta a Android Studio, deixa sincronitzar Gradle i executa-ho en un dispositiu.
